@@ -163,13 +163,15 @@ class _TableViewScreenState extends State<TableViewScreen> {
 
   Future<void> CleanTheTable(BuildContext context) async {
     widget.tableMaster.joinOTP = null;
+    widget.tableMaster.assignedStaffId = null;
     widget.tableMaster.occupiedPh = null;
     widget.tableMaster.occupiedName = null;
     widget.tableMaster.occupiedBy = null;
-    widget.tableMaster.assignedStaffId = null;
+
     widget.tableMaster.assignedStaffPh = null;
     widget.tableMaster.assignedStaffName = null;
     widget.tableMaster.isOccupied = false;
+    widget.tableMaster.isReserved = false;
     widget.tableMaster.from = "clean";
 
 
@@ -520,6 +522,7 @@ class _CancelItemDialogState extends State<CancelItemDialog> {
   }
 
   Future<void> OnCancelledItem(Orders order, String remark) async {
+
     Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
     order.status = "cancelled";
     order.cancelledById = user?.id;
