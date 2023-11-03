@@ -31,10 +31,35 @@ class TablesProvider with ChangeNotifier{
 
   Future<List<TableMaster>?> GetAllTables(BuildContext context) async {
     try{
-      final response = await _helper.get("home/tablemaster", context);
-      print("network Model");
+      final response = await _helper.get("table/tablemaster", context);
+      print("network Model" + response.toString());
       if(response != null){
         _tableMaster = List<TableMaster>.from(response.map((model)=> TableMaster.fromJson(model)));
+        calculateDuration();
+        String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
+        _assignedTableMaster = _tableMaster?.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
+        notifyListeners();
+        print("the table masters");
+        print(_tableMaster?.length!.toString());
+        return _tableMaster;
+      }
+
+    }catch(e){
+      print("network Model: " + e.toString());
+    }
+
+  }
+
+  Future<List<TableMaster>?> GetTableByTableId(BuildContext context, String tableNo) async {
+    try{
+      final response = await _helper.get("table/tablemaster/" + tableNo, context);
+      print("network Model");
+      if(response != null){
+        List<TableMaster> tableById = List<TableMaster>.from(response.map((model)=> TableMaster.fromJson(model)));
+        int? index = _tableMaster?.indexWhere((element) => element.tableNo == tableNo);
+        if(index != null){
+          _tableMaster?[index] = tableById.first;
+        }
         String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
         _assignedTableMaster = _tableMaster?.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
         notifyListeners();
@@ -50,7 +75,7 @@ class TablesProvider with ChangeNotifier{
 
   UpdateTable(TableMaster? table, BuildContext context) async {
     try{
-      final response = await _helper.post("home/tablemaster", table?.toJson(),  context);
+      final response = await _helper.post("table/tablemaster", table?.toJson(),  context);
       if(response != null){
         await GetAllTables(context);
       }
@@ -58,6 +83,28 @@ class TablesProvider with ChangeNotifier{
     }catch(e){
       return null;
     }
+  }
+
+  void calculateDuration() {
+    DateTime currentDate = DateTime.now();
+    _tableMaster?.forEach((e) {
+      if (e.loggedInTime != null) {
+        var timeStart = DateTime.parse(e?.loggedInTime ?? "").millisecondsSinceEpoch;
+        var timeEnd = currentDate.millisecondsSinceEpoch;
+        var hourDiff = timeEnd - timeStart; //in ms
+        var minDiff = hourDiff / 60 / 1000; //in minutes
+        var hDiff = hourDiff / 3600 / 1000; //in hours
+        int hours = hDiff.floor();
+        int minutes = (minDiff - 60 * hours).floor();
+        if (hours > 0) {
+          e.duration = '$hours hr $minutes min';
+        } else {
+          e.duration = '$minutes min';
+        }
+      } else {
+        // e.duration = '0 mins';
+      }
+    });
   }
 
 

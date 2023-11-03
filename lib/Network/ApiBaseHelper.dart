@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:jtable/Helpers/Constants.dart';
 import 'package:jtable/Network/AppException.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -9,18 +10,26 @@ import 'package:jtable/Network/AppException.dart';
 import 'dart:async';
 
 import 'package:jtable/Screens/Providers/global_provider.dart';
+import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:provider/provider.dart';
 
 class ApiBaseHelper {
 
-  final String _baseUrl = "https://jmenu.azurewebsites.net/api/";
+  final String _baseUrl = baseUrl;
 
   Future<dynamic> get(String url, BuildContext context) async {
     var responseJson;
     try {
-      var header = {HttpHeaders.contentTypeHeader: 'application/json'};
+      String? token = "";
+
+      if(context != null){
+        token = Provider.of<NetworkProvider>(context, listen: false).users?.token;
+      }
+      print(token);
+      var header = {HttpHeaders.contentTypeHeader: 'application/json', HttpHeaders.authorizationHeader: "Bearer $token" };
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(true, null) : print("context null");
       final response = await http.get(Uri.parse(_baseUrl + url), headers: header);
+      print(response.body);
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(false, null): print("c null");
       responseJson = _returnResponse(response);
     }  catch(ex) {
@@ -29,12 +38,20 @@ class ApiBaseHelper {
     }
     return responseJson;
   }
+
+
   Future<dynamic> post(String url, dynamic body, BuildContext context) async {
 
     var responseJson;
     try {
-      var header = {HttpHeaders.contentTypeHeader: 'application/json'};
+      String? token = "";
+      if(context != null){
+        token = Provider.of<NetworkProvider>(context, listen: false).users?.token;
+      }
+      print(token);
+      var header = {HttpHeaders.contentTypeHeader: 'application/json', HttpHeaders.authorizationHeader: "Bearer $token" };
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(true, null) : print("context null");
+      print(body);
       final response = await http.post(Uri.parse(_baseUrl + url), body: json.encode(body), headers: header);
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(false, null): print("c null");
       responseJson = _returnResponse(response);

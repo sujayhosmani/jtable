@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Screens/Dashboard/dashboard_screen.dart';
 import 'package:jtable/Screens/HomeScreen/Components/home_screen.dart';
+import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
 import 'package:jtable/Screens/StudentScreen/Components/student_screen.dart';
+import 'package:provider/provider.dart';
 
 class NavScreen extends StatefulWidget {
   @override
@@ -13,10 +16,18 @@ class _NavScreenState extends State<NavScreen> {
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   List<Widget> _widgetOptions = <Widget>[
+    MainTableScreen(),
   HomeScreen(),
-  DashbaordPage(),
+
   StudentProfile(),
   ];
+
+  @override
+  void initState() {
+    print("signalRService oninit state");
+    //Provider.of<SignalRService>(context, listen: false).initializeConnection();
+    super.initState();
+  }
 
   void _onItemTapped(int index) {
     setState(() {

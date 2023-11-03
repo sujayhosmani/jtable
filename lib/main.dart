@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/auth_service.dart';
+import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Screens/HomeScreen/Components/home_screen.dart';
 import 'package:jtable/Screens/LoginScreen/main_login_screen.dart';
@@ -16,11 +17,11 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AuthService appAuth = new AuthService();
-  Widget _defaultHome = new NavScreen();
+  Widget _defaultHome = new MainLogin();
 
   bool _result = await appAuth.login();
   if (_result) {
-    _defaultHome = new NavScreen();
+    _defaultHome = new MainLogin();
   }
   runApp(MyApp(home: _defaultHome,));
 }
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => LoggedInProvider()),
         ChangeNotifierProvider(create: (context) => OrdersProvider()),
         ChangeNotifierProvider(create: (context) => MenuProvider()),
+        ChangeNotifierProvider(create: (context) => SignalRService()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

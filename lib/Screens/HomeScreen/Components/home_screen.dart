@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/auth_service.dart';
+import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
@@ -43,9 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleRefresh() async {
-    Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
-    Provider.of<LoggedInProvider>(context, listen: false)
-        .GetAllNotifications(context);
+    await Provider.of<SignalRService>(context, listen: false).initializeConnection();
+    // Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
+    // Provider.of<LoggedInProvider>(context, listen: false)
+    //     .GetAllNotifications(context);
   }
 
   @override

@@ -30,7 +30,7 @@ class NetworkProvider with ChangeNotifier{
 
   Future<Users?> UserLogin(BuildContext context, String name, String password) async {
     try{
-      final response = await _helper.post("Menu/auth", Auth(name, password).toJson(), context);
+      final response = await _helper.post("login/auth", Auth(name, password, "sidduhotel").toJson(), context);
       print("network Model");
       if(response != null){
         _users = Users.fromJson(response);
