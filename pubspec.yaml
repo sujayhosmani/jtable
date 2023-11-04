@@ -44,8 +44,13 @@ dependencies:
   logging: ^1.2.0
   signalr_core: ^1.1.1
   signalr_flutter: ^0.2.0
+  custom_sliding_segmented_control: ^1.8.1
   json_annotation: ^4.8.1
   signalr_pure: ^1.1.0
+  persistent_bottom_nav_bar: ^5.0.2
+  flat_list: ^0.1.14
+  simple_grouped_listview: ^2.0.0
+  sticky_headers: ^0.3.0+2
   liquid_pull_to_refresh: ^3.0.1
 
 dev_dependencies:

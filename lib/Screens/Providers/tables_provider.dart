@@ -19,35 +19,67 @@ import 'package:shared_preferences/shared_preferences.dart';
 class TablesProvider with ChangeNotifier{
 
 
-  List<TableMaster>? _tableMaster;
+  List<TableMaster> _tableMaster = [];
 
-  List<TableMaster>? get tableMaster => _tableMaster;
+  List<TableMaster> get tableMaster => _tableMaster;
 
-  List<TableMaster>? _assignedTableMaster;
+  List<TableMaster> _reqTables = [];
 
-  List<TableMaster>? get assignedTableMaster => _assignedTableMaster;
+  List<TableMaster> get reqTables => _reqTables;
+
+  List<TableMaster>? _finalTableMaster;
+
+  List<TableMaster>? get finalTableMaster => _finalTableMaster;
+
+  List<String> _categories = [];
+
+  List<String> get categories => _categories;
+
+  List<String> _assignedCategories = [];
+
+  List<String> get assignedCategories => _assignedCategories;
+
+  List<String> _reqCategories = [];
+
+  List<String> get reqCategories => _reqCategories;
+
+  int _selectedVal = 2;
+
+  int? get selectedVal => _selectedVal;
+
+  List<TableMaster> _assignedTableMaster = [];
+
+  List<TableMaster> get assignedTableMaster => _assignedTableMaster;
 
   final ApiBaseHelper _helper = ApiBaseHelper();
 
-  Future<List<TableMaster>?> GetAllTables(BuildContext context) async {
+  Future<List<TableMaster>?> GetAllTables(BuildContext context, bool isFromRefresh) async {
     try{
-      final response = await _helper.get("table/tablemaster", context);
-      print("network Model" + response.toString());
-      if(response != null){
-        _tableMaster = List<TableMaster>.from(response.map((model)=> TableMaster.fromJson(model)));
-        calculateDuration();
-        String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
-        _assignedTableMaster = _tableMaster?.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
-        notifyListeners();
-        print("the table masters");
-        print(_tableMaster?.length!.toString());
-        return _tableMaster;
+      if(isFromRefresh){
+        performGetTables(context);
+      }else if(((_tableMaster?.length ?? 0) == 0)){
+        performGetTables(context);
       }
-
+      
+        return _tableMaster;
     }catch(e){
       print("network Model: " + e.toString());
     }
 
+  }
+  
+  performGetTables(BuildContext context) async {
+    final response = await _helper.get("table/tablemaster", context);
+    print("network Model" + response.toString());
+    if(response != null){
+      _tableMaster = List<TableMaster>.from(response.map((model)=> TableMaster.fromJson(model)));
+      calculateDuration(false);
+      String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
+      _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
+      _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
+      loadCategories();
+      notifyListeners();
+    }
   }
 
   Future<List<TableMaster>?> GetTableByTableId(BuildContext context, String tableNo) async {
@@ -61,7 +93,7 @@ class TablesProvider with ChangeNotifier{
           _tableMaster?[index] = tableById.first;
         }
         String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
-        _assignedTableMaster = _tableMaster?.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
+        _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
         notifyListeners();
         return _tableMaster;
       }
@@ -72,12 +104,23 @@ class TablesProvider with ChangeNotifier{
 
   }
 
+  updateFromSignalR(List<TableMaster> tables){
+    TableMaster table = tables.first;
+    int index = _tableMaster.indexWhere((element) => element.tableNo == table.tableNo);
+    _tableMaster[index] = table;
+    var id = _assignedTableMaster.first.assignedStaffId;
+    _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
+    _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
+    loadCategories();
+    notifyListeners();
+  }
+
 
   UpdateTable(TableMaster? table, BuildContext context) async {
     try{
       final response = await _helper.post("table/tablemaster", table?.toJson(),  context);
       if(response != null){
-        await GetAllTables(context);
+        await GetAllTables(context, true);
       }
 
     }catch(e){
@@ -85,7 +128,13 @@ class TablesProvider with ChangeNotifier{
     }
   }
 
-  void calculateDuration() {
+  void onValueChanged(int value){
+    _selectedVal = value;
+     notifyListeners();
+     //addToFinalTable();
+  }
+
+  void calculateDuration(bool isNotify) {
     DateTime currentDate = DateTime.now();
     _tableMaster?.forEach((e) {
       if (e.loggedInTime != null) {
@@ -105,6 +154,41 @@ class TablesProvider with ChangeNotifier{
         // e.duration = '0 mins';
       }
     });
+    if(isNotify){
+      notifyListeners();
+    }
+
+  }
+
+  void addToFinalTable() {
+    if(selectedVal == 1){
+      _finalTableMaster = _assignedTableMaster;
+    }else if(selectedVal == 3){
+      _finalTableMaster = _reqTables;
+    }else{
+      _finalTableMaster = _tableMaster;
+    }
+
+  }
+
+  void loadCategories() {
+    _categories = [];
+    _tableMaster?.forEach((element) {
+      _categories.add(element.tableCategory ?? "NA");
+    });
+    _categories = _categories.toSet().toList();
+    //
+    _assignedCategories = [];
+    _assignedTableMaster?.forEach((element) {
+      _assignedCategories.add(element.tableCategory ?? "NA");
+    });
+    _assignedCategories = _assignedCategories.toSet().toList();
+    //
+    _reqCategories = [];
+    _reqTables?.forEach((element) {
+      _reqCategories.add(element.tableCategory ?? "NA");
+    });
+    _reqCategories = _reqCategories.toSet().toList();
   }
 
 

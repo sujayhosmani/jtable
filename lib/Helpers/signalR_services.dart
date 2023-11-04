@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:jtable/Helpers/Constants.dart';
 import 'package:jtable/Models/Table_master.dart';
+import 'package:jtable/Screens/Providers/tables_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:signalr_flutter/signalr_flutter.dart';
 // import 'package:signalr_netcore/signalr_client.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,26 +17,69 @@ import 'package:signalr_pure/signalr_pure.dart';
 class SignalRService with ChangeNotifier{
 
   static const _serverUrl = "https://jmenu.azurewebsites.net/api/notify";
-  // late HubConnection _hubConnection;
+   late HubConnection connection;
   // late Logger _logger;
-  bool _connectionIsOpen = false;
+  bool connectionIsOpen = false;
+  static late BuildContext cntx;
 
 
-  Future<void> initializeConnection() async {
+
+  Future<void> initializeConnection(BuildContext contexts) async {
+    cntx = contexts;
     try{
       print("signalRService initialize" + _serverUrl);
-      final builder = HubConnectionBuilder()
-        ..url = _serverUrl
-        ..logLevel = LogLevel.warning
-        ..reconnect = true;
-      final connection = builder.build();
-      connection.on('SendTableDetails', (args) {
-        print("signalRService on Table details Received" + args.toString());
-      },);
-      await connection.startAsync();
-      final obj = await connection.invokeAsync('JoinGroup', ["table" + ResId]);
-      print("signalRService invoking ");
-      print(obj);
+
+      if(!connectionIsOpen){
+        final builder = HubConnectionBuilder()
+          ..url = _serverUrl
+          ..logLevel = LogLevel.warning
+          ..reconnect = true;
+
+        connection = builder.build();
+
+        if (connection.state != HubConnectionState.connected) {
+
+
+
+          connection.on('SendTableDetails', (args) {
+            print("signalRService on Table details Received" + args.toString());
+            List<TableMaster> tableById = List<TableMaster>.from(args.map((model)=> TableMaster.fromJson(model)));
+            print(tableById.length);
+            Provider.of<TablesProvider>(cntx, listen: false).updateFromSignalR(tableById);
+          },);
+
+
+          await connection.startAsync();
+          await connection.invokeAsync('JoinGroup', ["table" + ResId]);
+          connectionIsOpen = true;
+
+
+          connection.onreconnected((connectionId) {
+            print("signalRService on reconnected");
+            connectionIsOpen = true;
+            notifyListeners();
+          });
+
+          connection.onreconnecting((connectionId) {
+            print("signalRService on reconnecting");
+            connectionIsOpen = false;
+            notifyListeners();
+          });
+
+          connection.onclose((error) {
+            print("signalRService onclose $error");
+            connectionIsOpen = false;
+            notifyListeners();
+          });
+
+          print("signalRService - notificatins from connection");
+          notifyListeners();
+        }else{
+          connectionIsOpen = false;
+        }
+      }
+      
+
     }catch(e){
       print("signalRService initializeConnection exception" + e!.toString());
     }
@@ -57,7 +102,7 @@ class SignalRService with ChangeNotifier{
   //   }
   // }
 
-//   Future<void> initializeConnection() async {
+//   Future<void> initializeConnection2() async {
 //     _connectionIsOpen = false;
 //
 //     Logger.root.level = Level.ALL;

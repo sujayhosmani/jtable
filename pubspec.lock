@@ -225,6 +225,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  custom_sliding_segmented_control:
+    dependency: "direct main"
+    description:
+      name: custom_sliding_segmented_control
+      sha256: "05b73fa48d57218bfdf806bad68a859812b216cd81fe81c6cbefde89f39eb257"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.1"
   dart_style:
     dependency: transitive
     description:
@@ -273,6 +281,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  flat_list:
+    dependency: "direct main"
+    description:
+      name: flat_list
+      sha256: cf9a6cf363ae644148987bed64898548aa745f76293ad60d39de3ebf5c7604bf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.14"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -560,6 +576,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.1"
+  persistent_bottom_nav_bar:
+    dependency: "direct main"
+    description:
+      name: persistent_bottom_nav_bar
+      sha256: e2e031e3366fde01511e372a9a19d720a9b252bb456e5c8d77a30d7a4a2ddfb0
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.2"
   petitparser:
     dependency: transitive
     description:
@@ -744,6 +768,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  simple_grouped_listview:
+    dependency: "direct main"
+    description:
+      name: simple_grouped_listview
+      sha256: bf2dcb8d08e0ff488d65e4e048c0785f76f024ef3ddc39cbdb3494039be086c2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -821,6 +853,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
+  sticky_headers:
+    dependency: "direct main"
+    description:
+      name: sticky_headers
+      sha256: "9b3dd2cb0fd6a7038170af3261f855660cbb241cb56c501452cb8deed7023ede"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0+2"
   stream_channel:
     dependency: transitive
     description:

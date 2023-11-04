@@ -15,17 +15,16 @@ class _NavScreenState extends State<NavScreen> {
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  List<Widget> _widgetOptions = <Widget>[
-    MainTableScreen(),
-  HomeScreen(),
-
-  StudentProfile(),
+  final List<Widget> _widgetOptions = <Widget>[
+    const MainTableScreen(),
+    const Text("sf"),
+    StudentProfile(),
   ];
 
   @override
   void initState() {
     print("signalRService oninit state");
-    //Provider.of<SignalRService>(context, listen: false).initializeConnection();
+    Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
     super.initState();
   }
 
@@ -35,12 +34,40 @@ class _NavScreenState extends State<NavScreen> {
     });
   }
 
+  showAlertDialog(BuildContext context) {
+
+    // set up the button
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () { },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("My title"),
+      content: Text("This is my message."),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
        backgroundColor: Colors.white,
       body: SafeArea(
-        child: _widgetOptions.elementAt(_selectedIndex),
+        child: Consumer<SignalRService>(builder: (context, sig, child){
+          return _widgetOptions.elementAt(_selectedIndex);
+        }) ,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

@@ -38,13 +38,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
+    //Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
     Provider.of<LoggedInProvider>(context, listen: false)
         .GetAllNotifications(context);
   }
 
   Future<void> _handleRefresh() async {
-    await Provider.of<SignalRService>(context, listen: false).initializeConnection();
+    //await Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
     // Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
     // Provider.of<LoggedInProvider>(context, listen: false)
     //     .GetAllNotifications(context);

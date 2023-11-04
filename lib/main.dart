@@ -11,6 +11,7 @@ import 'package:jtable/Screens/Providers/logged_inProvider.dart';
 import 'package:jtable/Screens/Providers/menu_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
+import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => OrdersProvider()),
         ChangeNotifierProvider(create: (context) => MenuProvider()),
         ChangeNotifierProvider(create: (context) => SignalRService()),
+        ChangeNotifierProvider(create: (context) => SliderProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

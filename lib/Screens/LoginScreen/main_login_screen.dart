@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:jtable/Models/Users.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
+import 'package:jtable/Screens/StudentScreen/Components/student_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../Helpers/Utils.dart';
@@ -95,14 +97,15 @@ class MainLogin extends StatelessWidget {
     Users? res = await Provider.of<NetworkProvider>(context, listen: false).UserLogin(context, "sujayjay", "sujay");
     //context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(false, null): print("c null");
     if(res != null){
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 0));
       if (context.mounted) {
         print("in side navigation");
-        if(res != null){
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
-            return NavScreen();
-          }));
-        }
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
+        //   return NavScreen();
+        // }));
+        PersistentNavBarNavigator.pushNewScreen(
+            context,
+            screen: NavScreen());
       }
     }
 
