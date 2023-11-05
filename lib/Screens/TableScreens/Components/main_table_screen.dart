@@ -18,8 +18,10 @@ import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:jtable/Screens/StudentScreen/Widgets/assigned_tables.dart';
 import 'package:jtable/Screens/StudentScreen/Widgets/rank_widget.dart';
+import 'package:jtable/Screens/TableDetalView/Components/table_detail_screen.dart';
 import 'package:jtable/Screens/TableScreens/Widgets/all_table.dart';
 import 'package:jtable/Screens/ViewTableScreen/table_view_screen.dart';
+import 'package:jtable/Screens/settings/Components/settings_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:provider/provider.dart';
@@ -78,7 +80,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     return Consumer<SignalRService>(builder: (context, signal, child) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: signal.connectionIsOpen ? Colors.lightGreen : Colors.red,
+          backgroundColor: signal.connectionIsOpen ? Colors.orangeAccent : Colors.redAccent,
           title: Text("OttoMan"),
           actions: [
             Padding(
@@ -86,11 +88,23 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
               child: Row(
                 children: [
                   signal.connectionIsOpen ?
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.white,),
-                    onPressed: () => {
-                      _handleRefresh()
-                    },
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.refresh, color: Colors.black,),
+                        onPressed: () => {
+                          _handleRefresh()
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.settings, color: Colors.black,),
+                        onPressed: () => {
+                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                            return SettingsScreen();
+                          }))
+                        },
+                      ),
+                    ],
                   ) : ElevatedButton(onPressed: () => signal.initializeConnection(context), child: Text("Retry now!")),
                 ],
               ),
@@ -99,12 +113,12 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         ),
         body: Stack(
           children: [
-            buildTables3(),
+            buildTables2(),
             Consumer<GlobalProvider>(builder: (context, global, child) {
               print(global.error);
               return LoadingScreen(
                 isBusy: global.isBusy,
-                error: global?.error ?? "",
+                error: global.error ?? "",
                 onPressed: () {},
               );
             })
@@ -270,9 +284,16 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
           var table = table1[index];
           return Stack(
             children: [
-              Card(
-                color: getColor(table),
-                child: allTextContent(table),
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                    return TableDetailScreen();
+                  }));
+                },
+                child: Card(
+                  color: getColor(table),
+                  child: allTextContent(table),
+                ),
               ),
               (table.requestingOtp ?? 0) > 0 ? Align(
                 alignment: Alignment.topCenter,
@@ -478,7 +499,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         Expanded(
           child: Consumer<TablesProvider>(builder: (context, tab, child) {
             if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-              timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
+              timer = Timer.periodic(const Duration(seconds: 120), (Timer t) => tab.calculateDuration(true));
             }
             print("on refresh");
             return Stack(

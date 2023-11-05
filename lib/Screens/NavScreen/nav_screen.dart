@@ -18,7 +18,7 @@ class _NavScreenState extends State<NavScreen> {
   final List<Widget> _widgetOptions = <Widget>[
     const MainTableScreen(),
     const Text("sf"),
-    StudentProfile(),
+    // StudentProfile(),
   ];
 
   @override
@@ -62,34 +62,56 @@ class _NavScreenState extends State<NavScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Consumer<SignalRService>(builder: (context, sig, child){
-          return _widgetOptions.elementAt(_selectedIndex);
-        }) ,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.business),
-            label: 'Orders',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.school),
-            label: 'Notifications',
+    return Consumer<SignalRService>(builder: (context, signal, child) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: signal.connectionIsOpen ? Colors.orangeAccent : Colors.red,
+          title: Text("OttoMan"),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  signal.connectionIsOpen ?
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.white,),
+                    onPressed: () => {
+                      //_handleRefresh()
+                    },
+                  ) : ElevatedButton(onPressed: () => signal.initializeConnection(context), child: Text("Retry now!")),
+                ],
+              ),
+            )
+          ],
+        ),
+        body: SafeArea(
+          child: Consumer<SignalRService>(builder: (context, sig, child){
+            return _widgetOptions.elementAt(_selectedIndex);
+          }) ,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.business),
+            //   label: 'Orders',
+            // ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Settings',
 
-          )
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
-      ),
-    );
+            )
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Colors.amber[800],
+          unselectedItemColor: Colors.grey,
+          onTap: _onItemTapped,
+        ),
+      );
+    });
   }
 }

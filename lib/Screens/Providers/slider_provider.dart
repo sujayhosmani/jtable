@@ -21,17 +21,25 @@ class SliderProvider with ChangeNotifier{
 
 
 
-  int _selectedVal = 2;
+  int _selectedVal = 0;
 
-  int? get selectedVal => _selectedVal;
+  int get selectedVal => _selectedVal;
+
+  int _selectedSecVal = 0;
+
+  int get selectedSecVal => _selectedSecVal;
 
 
-
-
-  void onValueChanged(int value){
-    // _selectedVal = value;
-    // notifyListeners();
+  onValueChanged(int v){
+    _selectedVal = v;
+    notifyListeners();
   }
+
+  onValueChangedForSec(int v){
+    _selectedSecVal = v;
+    notifyListeners();
+  }
+
 
 
 }

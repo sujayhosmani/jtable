@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Users.dart';
+import 'package:jtable/Screens/NavScreen/persistance_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/StudentScreen/Components/student_screen.dart';
+import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
@@ -100,12 +103,13 @@ class MainLogin extends StatelessWidget {
       await Future.delayed(const Duration(seconds: 0));
       if (context.mounted) {
         print("in side navigation");
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
-        //   return NavScreen();
-        // }));
-        PersistentNavBarNavigator.pushNewScreen(
-            context,
-            screen: NavScreen());
+        Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context){
+          return MainTableScreen();
+        }));
+        // PersistentNavBarNavigator.pushNewScreen(
+        //     context,
+        //     screen: PersistStyleNavBar(menuScreenContext: context,));
       }
     }
 

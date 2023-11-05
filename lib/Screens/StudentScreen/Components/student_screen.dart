@@ -83,23 +83,10 @@ class _StudentProfileState extends State<StudentProfile> with AutomaticKeepAlive
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("OttoMan"),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: IconButton(
-              icon: const Icon(Icons.refresh, color: Colors.white,),
-              onPressed: () => {
-                _handleRefresh()
-              },
-            ),
-          )
-        ],
-      ),
+
       body: Stack(
         children: [
-          buildTables2(),
+          buildTables3(),
           Consumer<GlobalProvider>(builder: (context, global, child) {
             print(global.error);
             return LoadingScreen(

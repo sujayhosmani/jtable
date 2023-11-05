@@ -14,18 +14,23 @@ class ParentDetails extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
         child: Row(
           children: [
+            ClipRRect(
+                borderRadius: BorderRadius.circular(60),
+                child: Container(
+                  color: Colors.blueGrey,
+                  height: 75,
+                  width: 75,
+                  child: Center(child: Text("Su", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 23),)),
+                )
+            ),
             SizedBox(width: 20,),
-            Row(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text("Hi"),
-                SizedBox(width: 5,),
-                Consumer<NetworkProvider>(
-                  builder: (context, user, child) {
-                    return Text(user.users?.name ?? "", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),);
-                  }
-                ),
+                Text("Siddaraju", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+                Text("8553655890"),
+                Text("Staff")
               ],
             )
 
