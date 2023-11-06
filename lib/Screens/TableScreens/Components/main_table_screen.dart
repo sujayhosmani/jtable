@@ -8,6 +8,7 @@ import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
+import 'package:jtable/Screens/HomeScreen/Components/home_screen.dart';
 import 'package:jtable/Screens/HomeScreen/Widgets/headings_home.dart';
 import 'package:jtable/Screens/HomeScreen/Widgets/parent_detail.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
@@ -100,7 +101,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
                         icon: const Icon(Icons.settings, color: Colors.black,),
                         onPressed: () => {
                           Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                            return SettingsScreen();
+                            return HomeScreen();
                           }))
                         },
                       ),
@@ -287,7 +288,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
               InkWell(
                 onTap: () {
                   Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                    return TableDetailScreen();
+                    return TableDetailScreen(tableMaster: table,);
                   }));
                 },
                 child: Card(

@@ -123,9 +123,8 @@ class _TableViewScreenState extends State<TableViewScreen> {
               ),
               Column(
                 children: [
-                  Consumer<OrdersProvider>(
-                    builder: (context, orders, child) {
-                      return _tabselection(orders: orders);
+                  Consumer<OrdersProvider>(builder: (context, orders, child) {
+                      return tabselection(orders: orders);
                     }
                   )
                 ],
@@ -182,12 +181,12 @@ class _TableViewScreenState extends State<TableViewScreen> {
   }
 }
 
-class _tabselection extends StatelessWidget{
+class tabselection extends StatelessWidget{
   final OrdersProvider orders;
   // final Function onAccept;
   // final Function onCancel;
 
-  const _tabselection({super.key, required this.orders});
+  const tabselection({super.key, required this.orders});
 
   @override
   Widget build(BuildContext context){
@@ -197,8 +196,13 @@ class _tabselection extends StatelessWidget{
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Container(
+            width: double.infinity,
+            height: 40,
             child:
-            TabBar(isScrollable: true, indicatorColor: Colors.black87,
+            TabBar(isScrollable: true, 
+                padding: EdgeInsets.zero,
+                // labelPadding: EdgeInsets.only(top: 2, bottom: 2, left: 10, right: 10),
+                indicatorColor: Colors.black87,
                 tabs: [
                   Tab(
                     child: Badge(
