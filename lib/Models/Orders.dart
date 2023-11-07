@@ -33,7 +33,15 @@ class Orders {
       this.updatedDateTime, 
       this.isActive, 
       this.createdBy, 
-      this.updatedBy,});
+      this.updatedBy,
+      this.insertedBy,
+      this.addedByPh,
+      this.assignedPh,
+      this.insertedById,
+      this.insertedByName,
+      this.insertedByPh,
+      this.isCancelled,
+      this.loggedInStatus});
 
   Orders.fromJson(dynamic json) {
     itemId = json['itemId'];
@@ -70,6 +78,16 @@ class Orders {
     isActive = json['isActive'];
     createdBy = json['createdBy'];
     updatedBy = json['updatedBy'];
+
+    insertedBy = json['insertedBy'];
+    addedByPh = json['addedByPh'];
+    assignedPh = json['assignedPh'];
+    insertedById = json['insertedById'];
+    insertedByName = json['insertedByName'];
+    insertedByPh = json['insertedByPh'];
+    isCancelled = json['isCancelled'];
+    loggedInStatus = json['loggedInStatus'];
+
   }
   String? itemId;
   String? itemName;
@@ -90,14 +108,14 @@ class Orders {
   String? assignedName;
   String? status;
   bool? isAccepted;
-  String? cancelledByName;
-  String? cancelledById;
-  String? remarks;
   String? instructions;
   String? tableNo;
   String? tableId;
   int? orderNo;
   bool? isRunning;
+  String? cancelledByName;
+  String? cancelledById;
+  String? remarks;
   String? id;
   int? code;
   String? createdDateTime;
@@ -105,6 +123,17 @@ class Orders {
   bool? isActive;
   String? createdBy;
   String? updatedBy;
+
+  String? addedByPh;
+  String? assignedPh;
+  String? loggedInStatus;
+  bool? isCancelled;
+  String? insertedBy;
+  String? insertedById;
+  String? insertedByName;
+  String? insertedByPh;
+
+
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -142,6 +171,15 @@ class Orders {
     map['isActive'] = isActive;
     map['createdBy'] = createdBy;
     map['updatedBy'] = updatedBy;
+
+    map['insertedBy'] = insertedBy;
+    map['addedByPh'] = addedByPh;
+    map['assignedPh'] = assignedPh;
+    map['insertedById'] = insertedById;
+    map['insertedByName'] = insertedByName;
+    map['insertedByPh'] = insertedByPh;
+    map['isCancelled'] = isCancelled;
+    map['loggedInStatus'] = loggedInStatus;
     return map;
   }
 

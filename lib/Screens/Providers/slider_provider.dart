@@ -43,3 +43,20 @@ class SliderProvider with ChangeNotifier{
 
 
 }
+
+class FooterProvider with ChangeNotifier{
+
+
+  int _selectedFooter = 0;
+
+  int get selectedFooter => _selectedFooter;
+
+
+  onValueChanged(int v){
+    _selectedFooter = v;
+    notifyListeners();
+  }
+
+
+
+}

@@ -105,14 +105,25 @@ class TablesProvider with ChangeNotifier{
   }
 
   updateFromSignalR(List<TableMaster> tables){
-    TableMaster table = tables.first;
-    int index = _tableMaster.indexWhere((element) => element.tableNo == table.tableNo);
-    _tableMaster[index] = table;
-    var id = _assignedTableMaster.first.assignedStaffId;
-    _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
-    _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
-    loadCategories();
-    notifyListeners();
+    try{
+      print("updateFromSignalR 1");
+      TableMaster table = tables.first;
+      print("updateFromSignalR 2");
+      int index = _tableMaster.indexWhere((element) => element.tableNo == table.tableNo);
+      _tableMaster[index] = table;
+      print("updateFromSignalR 3");
+      var id = _assignedTableMaster.first.assignedStaffId;
+      print("updateFromSignalR 4");
+      _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
+      print("updateFromSignalR 5");
+      _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
+      print(_tableMaster.length);
+      loadCategories();
+      notifyListeners();
+    }catch(e){
+      print(e.toString());
+    }
+
   }
 
 

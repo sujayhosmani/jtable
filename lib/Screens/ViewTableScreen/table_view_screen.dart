@@ -410,7 +410,7 @@ class _itemList extends StatelessWidget {
     };
     List<Orders> orders = [];
     orders.add(order);
-    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
+   // Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
   }
 
   onAcceptAll(List<Orders>? orders, BuildContext context, String from) {
@@ -421,7 +421,7 @@ class _itemList extends StatelessWidget {
         element.status = "completed";
       };
     });
-    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, orders?[0].ordersId ?? "", orders?[0].tableNo ?? "");
+    //Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, orders?[0].ordersId ?? "", orders?[0].tableNo ?? "", orders);
   }
 
 
@@ -534,7 +534,7 @@ class _CancelItemDialogState extends State<CancelItemDialog> {
     order.remarks = remark;
     List<Orders> orders = [];
     orders.add(order);
-    await Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
+    //await Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
     Navigator.pop(context);
   }
 }

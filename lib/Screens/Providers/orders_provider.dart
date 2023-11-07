@@ -46,18 +46,7 @@ class OrdersProvider with ChangeNotifier{
       print("network Model");
       if(response != null){
         _orders = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
-        _pending_orders = await _orders?.where((element) => element.status == "pending").toList();
-        _inprogress_orders = _orders?.where((element) => element.status == "in_progress").toList();
-        _completedOrders = _orders?.where((element) => element.status == "completed").toList();
-        _delivered_orders = _orders?.where((element) => element.status == "delivered").toList();
-        List<Orders>? allOrdersExceptCancelled = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
-        List<Orders>? cancelled = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
-        allOrdersExceptCancelled = allOrdersExceptCancelled?.where((element) => element.status != "cancelled").toList();
-        cancelled = cancelled?.where((element) => element.status == "cancelled").toList();
-        List<Orders>? mergedAllExceptCancelled = getMergedList(allOrdersExceptCancelled);
-        List<Orders>? mergedAllCancelled = getMergedList(cancelled);
-        mergedAllExceptCancelled?.addAll(mergedAllCancelled as Iterable<Orders>);
-        _merged_orders = mergedAllExceptCancelled;
+        fillOtherOrders(List<Orders>.from(response.map((model)=> Orders.fromJson(model))), List<Orders>.from(response.map((model)=> Orders.fromJson(model))));
         notifyListeners();
         return _orders;
       }
@@ -96,12 +85,30 @@ class OrdersProvider with ChangeNotifier{
       print(tableNo);
       final response = await _helper.post("orders/orders", order,  context);
       if(response != null){
+        // _orders = order;
+        // fillOtherOrders(order, order);
+        // notifyListeners();
         await GetOrdersByOrderId(context, orderId, tableNo);
       }
 
     }catch(e){
       return null;
     }
+  }
+
+  void fillOtherOrders(List<Orders>? orderz, List<Orders>? orderz2) {
+    _pending_orders = _orders?.where((element) => element.status == "pending").toList();
+    _inprogress_orders = _orders?.where((element) => element.status == "in_progress").toList();
+    _completedOrders = _orders?.where((element) => element.status == "completed").toList();
+    _delivered_orders = _orders?.where((element) => element.status == "delivered").toList();
+    List<Orders>? allOrdersExceptCancelled = orderz;// List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
+    List<Orders>? cancelled = orderz2;//List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
+    allOrdersExceptCancelled = allOrdersExceptCancelled?.where((element) => element.status != "cancelled").toList();
+    cancelled = cancelled?.where((element) => element.status == "cancelled").toList();
+    List<Orders>? mergedAllExceptCancelled = getMergedList(allOrdersExceptCancelled);
+    List<Orders>? mergedAllCancelled = getMergedList(cancelled);
+    mergedAllExceptCancelled?.addAll(mergedAllCancelled as Iterable<Orders>);
+    _merged_orders = mergedAllExceptCancelled;
   }
 
 
