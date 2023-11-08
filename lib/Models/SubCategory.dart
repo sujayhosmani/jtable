@@ -2,7 +2,7 @@ import 'SubCategories.dart';
 
 class SubCategory {
   SubCategory({
-      this.categoryId, 
+      this.catDiscount,
       this.categoryName, 
       this.catImage, 
       this.subCategories, 
@@ -12,10 +12,12 @@ class SubCategory {
       this.updatedDateTime, 
       this.isActive, 
       this.createdBy, 
-      this.updatedBy,});
+      this.updatedBy,
+  this.catMaxQuantity,
+  this.catStatus});
 
   SubCategory.fromJson(dynamic json) {
-    categoryId = json['categoryId'];
+    catDiscount = json['catDiscount'];
     categoryName = json['categoryName'];
     catImage = json['catImage'];
     if (json['subCategories'] != null) {
@@ -31,8 +33,11 @@ class SubCategory {
     isActive = json['isActive'];
     createdBy = json['createdBy'];
     updatedBy = json['updatedBy'];
+
+    catMaxQuantity = json['catMaxQuantity'];
+    catStatus = json['catStatus'];
   }
-  String? categoryId;
+  String? catDiscount;
   String? categoryName;
   String? catImage;
   List<SubCategories>? subCategories;
@@ -44,9 +49,12 @@ class SubCategory {
   String? createdBy;
   String? updatedBy;
 
+  int? catMaxQuantity;
+  bool? catStatus;
+
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
-    map['categoryId'] = categoryId;
+    map['catDiscount'] = catDiscount;
     map['categoryName'] = categoryName;
     map['catImage'] = catImage;
     if (subCategories != null) {
@@ -59,6 +67,9 @@ class SubCategory {
     map['isActive'] = isActive;
     map['createdBy'] = createdBy;
     map['updatedBy'] = updatedBy;
+
+    map['catMaxQuantity'] = catMaxQuantity;
+    map['catStatus'] = catStatus;
     return map;
   }
 

@@ -3,10 +3,9 @@ import 'Items.dart';
 class MenuItems {
   MenuItems({
       this.categoryId,
-    this.categoryName,
       this.subCategoryId,
-    this.subCategoryName,
-      this.itemId, 
+      this.itemId,
+    this.status,
       this.items, 
       this.id, 
       this.code,
@@ -14,9 +13,8 @@ class MenuItems {
 
   MenuItems.fromJson(dynamic json) {
     categoryId = json['categoryId'];
-    categoryName = json['categoryName'];
     subCategoryId = json['subCategoryId'];
-    subCategoryName = json['subCategoryName'];
+    status = json['status'];
     itemId = json['itemId'];
     items = json['items'] != null ? Items.fromJson(json['items']) : null;
     id = json['id'];
@@ -24,11 +22,10 @@ class MenuItems {
     isActive = json['isActive'];
   }
   String? categoryId;
-  String? categoryName;
   String? subCategoryId;
-  String? subCategoryName;
   String? itemId;
   Items? items;
+  bool? status;
   String? id;
   int? code;
   bool? isActive;
@@ -36,9 +33,8 @@ class MenuItems {
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['categoryId'] = categoryId;
-    map['categoryName'] = categoryName;
+    map['status'] = status;
     map['subCategoryId'] = subCategoryId;
-    map['subCategoryName'] = subCategoryName;
     map['itemId'] = itemId;
     if (items != null) {
       map['items'] = items?.toJson();

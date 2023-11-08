@@ -30,20 +30,32 @@ class MenuProvider with ChangeNotifier{
   List<Orders>? _cartItems;
   List<Orders>? get cartItems => _cartItems;
 
-  List<CategoriesMaster>? _categories;
-  List<CategoriesMaster>? get categories => _categories;
+  String _selectedCatId = "999";
+  String get selectedCatId => _selectedCatId;
 
-  List<SubCategory>? _subCategories;
-  List<SubCategory>? get subCategories => _subCategories;
+  String _selectedSubCatId = "All";
+  String get selectedSubCatId => _selectedSubCatId;
+
+  // List<CategoriesMaster>? _categories;
+  // List<CategoriesMaster>? get categories => _categories;
+
+  List<SubCategory> _subCategories = [];
+  List<SubCategory> get subCategories => _subCategories;
 
   List<SubCategory>? _filterSubCategories;
   List<SubCategory>? get filterSubCategories => _filterSubCategories;
 
-  List<MenuItems>? _menuItems;
-  List<MenuItems>? get menuItems => _menuItems;
+  List<SubCategories> _subListCategoriesz = [];
+  List<SubCategories> get subListCategoriesz => _subListCategoriesz;
 
-  List<MenuItems>? _filterMenuItems;
-  List<MenuItems>? get filterMenuItems => _filterMenuItems;
+  List<SubCategories> _filterSubListCategoriesz = [];
+  List<SubCategories> get filterSubListCategoriesz => _filterSubListCategoriesz;
+
+  List<MenuItems> _menuItems = [];
+  List<MenuItems> get menuItems => _menuItems;
+
+  List<MenuItems> _filterMenuItems = [];
+  List<MenuItems> get filterMenuItems => _filterMenuItems;
 
   final ApiBaseHelper _helper = ApiBaseHelper();
 
@@ -65,10 +77,17 @@ class MenuProvider with ChangeNotifier{
 
   Future<List<SubCategory>?> GetSubCategories(BuildContext context) async {
     try{
-      final response = await _helper.get("Menu/subcategory", context);
-      print("network Model");
+      final response = await _helper.get("subcategory/subcategory", context);
+      print("network Model GetSubCategories" + response.toString());
       if(response != null){
         _subCategories = List<SubCategory>.from(response.map((model)=> SubCategory.fromJson(model)));
+        List<SubCategories> subs = [];
+        _selectedCatId = "999";
+        _selectedSubCatId = "999";
+        // SubCategories sub = SubCategories(subCategoryName: "All");
+        // subs.add(sub);
+        SubCategory subCat = SubCategory(categoryName: "All", id: "999", subCategories: subs);
+        _subCategories.insert(0, subCat);
         await GetMenuItems(context);
       }
 
@@ -80,12 +99,12 @@ class MenuProvider with ChangeNotifier{
 
   Future<List<SubCategory>?> GetMenuItems(BuildContext context) async {
     try{
-      final response = await _helper.get("Menu/menuitems", context);
-      print("network Model");
+      final response = await _helper.get("menu/menuitems", context);
+      print("network Model GetMenuItems" + response.toString());
       if(response != null){
         _menuItems = List<MenuItems>.from(response.map((model)=> MenuItems.fromJson(model)));
-        notifyListeners();
-        return GetCatDetails();
+        _filterMenuItems = List<MenuItems>.from(response.map((model)=> MenuItems.fromJson(model)));
+        MergeAll();
 
       }
 
@@ -97,10 +116,10 @@ class MenuProvider with ChangeNotifier{
 
   onSearch(String Val){
     _subCategories?.forEach((subCat) {
-      CategoriesMaster cat = CategoriesMaster(categoryName: subCat.categoryName, catImage: subCat.catImage, id: subCat.categoryId);
-      _categories?.add(cat);
+      // CategoriesMaster cat = CategoriesMaster(categoryName: subCat.categoryName, catImage: subCat.catImage, id: subCat.id);
+      // _categories?.add(cat);
       subCat.subCategories?.forEach((subList) {
-        List<MenuItems>? itemsOfSubCategory = _menuItems?.where((menuItem) => menuItem.subCategoryId == subList.subCategoryId && subCat.categoryId == menuItem.categoryId).toList();
+        List<MenuItems>? itemsOfSubCategory = _menuItems?.where((menuItem) => menuItem.subCategoryId == subList.subCategoryId && subCat.id == menuItem.categoryId).toList();
         itemsOfSubCategory?.forEach((element) {
           Items? item = element.items;
           if(item != null && item.itemName!.contains(Val)){
@@ -112,29 +131,52 @@ class MenuProvider with ChangeNotifier{
     notifyListeners();
   }
 
-  GetCatDetails(){
-    _menuItems?.forEach((menuItem) {
-        SubCategory? firstSub = _subCategories?.where((subCat) => subCat.categoryId == menuItem.categoryId).firstOrNull;
-        menuItem.categoryName = firstSub?.categoryName;
-        SubCategories? subListCat = firstSub?.subCategories?.where((subList) => subList.subCategoryId == menuItem.subCategoryId).firstOrNull;
-        menuItem.subCategoryName = subListCat?.subCategoryName;
-        _filterMenuItems = _menuItems;
-    });
-  }
 
   MergeAll(){
-    _subCategories?.forEach((subCat) {
-      CategoriesMaster cat = CategoriesMaster(categoryName: subCat.categoryName, catImage: subCat.catImage, id: subCat.categoryId);
-      _categories?.add(cat);
-      subCat.subCategories?.forEach((subList) {
-          List<MenuItems>? itemsOfSubCategory = _menuItems?.where((menuItem) => menuItem.subCategoryId == subList.subCategoryId && subCat.categoryId == menuItem.categoryId).toList();
-          itemsOfSubCategory?.forEach((element) {
-            Items? item = element.items;
-            subList.items?.add(item!);
+    // _subCategories?.forEach((subCat) {
+    //   subCat.subCategories?.forEach((subList) {
+    //       List<MenuItems>? itemsOfSubCategory = _menuItems?.where((menuItem) => menuItem.subCategoryId == subList.subCategoryId && subCat.id == menuItem.categoryId).toList();
+    //       itemsOfSubCategory?.forEach((element) {
+    //         Items? item = element.items;
+    //         subList.items?.add(item!);
+    //         subList.catId = subCat.id;
+    //       });
+    //   });
+    // });
+    // _filterSubCategories = subCategories.toList();
+    // print("zzzzzzzzzzzzzzzzzz" + (subCatz.subCategoryName ?? "") + (subCatz?.catId ?? ""));
+    // print("zzzzzzzzzzzzzzzzzz" + (subCatz.items?.length ?? 0).toString());
+    // print("qqqqqqqqqqqqqqq" + (element.itemName ?? ""));
+
+    _subListCategoriesz = [];
+    _subCategories.forEach((mainSubCatz) {
+          mainSubCatz.subCategories?.forEach((subCatz) {
+               subCatz.items = [];
+               var menuItemsz = _menuItems.where((element) => element.subCategoryId == subCatz.subCategoryId).toList();
+               List<Items> finalItems = [];
+               if(menuItemsz.length > 0){
+                 menuItemsz.forEach((mz) {
+                   Items? it = mz.items;
+                   if(it != null){
+                     finalItems.add(it);
+                   }
+
+                 });
+                 subCatz.items = finalItems;
+                 subCatz.catId = menuItemsz.first.categoryId;
+                 _subListCategoriesz.add(subCatz);
+                 print("zzzzzzzzzzzzzzzzzz" + (subCatz?.items?.length ?? 0).toString());
+               }
           });
+    });
+    _filterSubCategories = subCategories.toList();
+    _filterSubListCategoriesz = subListCategoriesz.toList();
+    filterSubListCategoriesz.forEach((f1) {
+      print("zzzzzzzzzzzzzzzzzzqqqqq" + (f1.catId ?? ""));
+      f1.items?.forEach((element) {
+
       });
     });
-    _filterSubCategories = subCategories;
     notifyListeners();
     return _subCategories;
   }
@@ -179,8 +221,21 @@ class MenuProvider with ChangeNotifier{
       notifyListeners();
   }
 
+  updateCatIdAndSubCatId(String? catId, String? subCatId) {
+    _selectedCatId = catId ?? "999";
+    _selectedSubCatId = subCatId ?? "999";
+    updateMenuToSelectedCatId();
+  }
 
+  void updateMenuToSelectedCatId() {
+    print(_selectedSubCatId);
+    if(_selectedCatId == "999"){
+      _filterSubListCategoriesz = subListCategoriesz.toList();
+    }else{
+      _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+    }
 
-
+    notifyListeners();
+  }
 
 }

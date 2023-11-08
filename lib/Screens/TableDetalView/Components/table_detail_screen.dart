@@ -3,6 +3,7 @@ import 'package:jtable/Helpers/Utils.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
+import 'package:jtable/Screens/MenuScreen/menu_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
@@ -21,8 +22,10 @@ class TableDetailScreen extends StatefulWidget {
 
 class _TableDetailScreenState extends State<TableDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<Orders> cartItems = [];
   void initState() {
     super.initState();
+    cartItems = [];
     Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
         context,
         widget.tableMaster.occupiedById ?? "",
@@ -51,6 +54,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             buildPrimaryTopBar(slide.selectedVal),
             buildTabBar(slide, orders),
             buildTabBarView(slide, orders),
+            //buildOtherViews(slide.selectedVal),
             Consumer<FooterProvider>(builder: (context, footer, child) {
               return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
             })
@@ -96,8 +100,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   buildFooter(selectedVal, secVal, OrdersProvider ordersProvider) {
-    print("buildFooter");
-    print(secVal);
+
     return Container(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -111,8 +114,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   buildGoBackFooter(){
-    print("on pending");
-    print(_tabController.index);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -294,7 +296,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
       maintainState: true,
       child: SizedBox(
         width: double.infinity,
-        height: 45,
+        height: slide.selectedVal == 3 ? 45 : 0,
         child:
         TabBar(
             // isScrollable: true,
@@ -303,7 +305,6 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             // labelPadding: EdgeInsets.only(top: 2, bottom: 2, left: 10, right: 10),
             indicatorColor: Colors.black87,
             onTap: (index){
-            print(index);
               Provider.of<FooterProvider>(context, listen: false).onValueChanged(index);
             },
             tabs: [
@@ -334,71 +335,46 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
 
   buildTabBarView(SliderProvider slide, OrdersProvider orders) {
     return Expanded(
-      child: Visibility(
-        visible: slide.selectedVal == 3,
-        maintainSize: true,
-        maintainAnimation: true,
-        maintainState: true,
-        child: Container(
-          // color: Colors.blue,
-          child: TabBarView(
-            physics: const NeverScrollableScrollPhysics(),
-            controller: _tabController,
-              children: [
-            Container(
-              //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: _itemList(orders: orders.pending_orders, from: 'pending',),
+      child: Stack(
+        children: [
+          Visibility(
+            visible: slide.selectedVal == 3,
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            child: Container(
+              // color: Colors.blue,
+              child: TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: _tabController,
+                  children: [
+                    Container(
+                      //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      child: _itemList(orders: orders.pending_orders, from: 'pending',),
+                    ),
+                    Container(
+                      //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      child: _itemList(orders: orders.inprogress_orders, from: 'in_progress',),
+                    ),
+                    Container(
+                      //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      child: _itemList(orders: orders.completedOrders, from: 'completed',),
+                    ),
+                    Container(
+                      //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      child: _itemList(orders: orders.merged_orders, from: 'all',),
+                    ),
+                  ]),
             ),
-            Container(
-              //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: _itemList(orders: orders.inprogress_orders, from: 'in_progress',),
-            ),
-            Container(
-              //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: _itemList(orders: orders.completedOrders, from: 'completed',),
-            ),
-            Container(
-              //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: _itemList(orders: orders.merged_orders, from: 'all',),
-            ),
-          ]),
-        ),
-      ),
+          ),
+          buildOtherViews(slide.selectedVal)
+        ],
+      )
     );
-    // switch(slide.selectedVal){
-    //   case 3: return Expanded(
-    //     child: Container(
-    //       // color: Colors.blue,
-    //       child: TabBarView(children: [
-    //         Container(
-    //           //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-    //           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    //           child: _itemList(orders: orders.pending_orders, from: 'pending',),
-    //         ),
-    //         Container(
-    //           //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-    //           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    //           child: _itemList(orders: orders.inprogress_orders, from: 'in_progress',),
-    //         ),
-    //         Container(
-    //           //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
-    //           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    //           child: _itemList(orders: orders.completedOrders, from: 'completed',),
-    //         ),
-    //         Container(
-    //           //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
-    //           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    //           child: _itemList(orders: orders.merged_orders, from: 'all',),
-    //         ),
-    //       ]),
-    //     ),
-    //   );
-    // }
-    // return Container();
   }
 
   buildSecondaryOrdersView(selectedVal) {
@@ -436,8 +412,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   buildForPending(List<Orders>? pendingOrders, List<Orders>? progressOrders) {
-    print("on pending");
-    print(_tabController.index);
+
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -474,8 +450,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   buildForProgress(List<Orders>? progressOrders) {
-    print("on pending");
-    print(_tabController.index);
+
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -506,6 +482,37 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
       };
     });
     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, orders?[0].ordersId ?? "", orders?[0].tableNo ?? "");
+  }
+
+
+
+  buildOtherViews(selectedVal) {
+
+    switch(selectedVal){
+      case 1: return Container(child: Text("Table"),);
+      case 2: {
+        return Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("There are no items in cart"),
+              ElevatedButton(onPressed: (){
+                Navigator.of(context).push(new MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return MenuScreen();
+                    },
+                    fullscreenDialog: true));
+              }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87
+              ),)
+            ],
+          ),);
+      }
+      case 4: return Container(child: Text("bill"),);
+      default: return Container(child: Text("default"),);
+    }
   }
 
 
@@ -579,7 +586,7 @@ class _itemList extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 5, 0, 8),
                           child: Text(
-                            "X" + (orders?[index].quantity.toString() ?? "") ??
+                            "X${orders?[index].quantity.toString() ?? ""}" ??
                                 "", style: TextStyle(fontSize: 13.0),),
                         ),
 
@@ -641,7 +648,7 @@ class _itemList extends StatelessWidget {
   }
 
   onAcceptPending(Orders order, BuildContext context, String from) {
-    print("on accept pending");
+
     if(from == "pending"){
       order.status = "in_progress";
     }else if(from == "in_progress"){

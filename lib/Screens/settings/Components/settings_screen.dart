@@ -174,7 +174,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     double minTileWidth = 120;
 
     double availableWidth = MediaQuery.of(context).size.width;
-    print(availableWidth);
     int i = availableWidth ~/ minTileWidth;
     return i;
 

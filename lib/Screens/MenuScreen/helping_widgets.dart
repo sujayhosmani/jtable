@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:jtable/Models/Items.dart';
 import 'package:jtable/Models/MenuItems.dart';
 import 'package:jtable/Models/SubCategories.dart';
 import 'package:jtable/Models/SubCategory.dart';
@@ -13,13 +14,14 @@ import 'package:provider/provider.dart';
 class FoodListView extends StatelessWidget {
   const FoodListView({
     Key? key,
-    required this.foods,
+    required this.foodsz,
   }) : super(key: key);
 
-  final MenuItems foods;
+  final Items? foodsz;
 
   @override
   Widget build(BuildContext context) {
+    var foods = foodsz; //.items;
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -30,7 +32,7 @@ class FoodListView extends StatelessWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(0,5,0,0),
-            child: foods?.items?.preference?.toLowerCase() == "veg" ?  const VegBadgeView() : foods?.items?.preference?.toLowerCase() == "non veg" ? const NonVegBadgeView()  : Container(),
+            child: foods?.preference?.toLowerCase() == "veg" ?  const VegBadgeView() : foods?.preference?.toLowerCase() == "non veg" ? const NonVegBadgeView()  : Container(),
           ),
           Expanded(
             child: Column(
@@ -39,11 +41,11 @@ class FoodListView extends StatelessWidget {
               children: <Widget>[
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
-                  child: Text( foods?.items?.itemName ?? "", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade900),),
+                  child: Text( foods?.itemName ?? "", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade900),),
                 ),
 
                 Text(
-                  foods?.items?.description ?? "",
+                  foods?.description ?? "",
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context)
@@ -59,11 +61,11 @@ class FoodListView extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(0,0,10,0),
-            child: Text(foods?.items?.price.toString() ?? "", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
+            child: Text(foods?.price.toString() ?? "", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
           ),
-          (foods?.items?.quantity ?? 0) > 0 ? CartBtnView() : AddBtnView(onItemAdded: () {
+          (foods?.quantity ?? 0) > 0 ? CartBtnView() : AddBtnView(onItemAdded: () {
             print("dwdsfsff");
-            Provider.of<MenuProvider>(context, listen: false).onAddFirstCartItem(foods.items!);
+            Provider.of<MenuProvider>(context, listen: false).onAddFirstCartItem(foods!);
           },),
         ],
       ),

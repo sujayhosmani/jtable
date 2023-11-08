@@ -253,7 +253,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     double minTileWidth = 120;
 
     double availableWidth = MediaQuery.of(context).size.width;
-    print(availableWidth);
     int i = availableWidth ~/ minTileWidth;
     return i;
 
@@ -380,7 +379,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         itemBuilder: (BuildContext context, int index){
           var cat = tab.assignedCategories[index];
           List<TableMaster>? table1 = tab.assignedTableMaster?.where((element) => element.tableCategory == cat).toList();
-          print("on refresh 22");
           return StickyHeader(
             header: Text(cat),
             content: loadGridContent(table1!, context),
@@ -397,7 +395,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         itemBuilder: (BuildContext context, int index){
           var cat = tab.categories[index];
           List<TableMaster>? table1 = tab.tableMaster?.where((element) => element.tableCategory == cat).toList();
-          print("on refresh 22");
           return StickyHeader(
             header: Text(cat),
             content: loadGridContent(table1!, context),
@@ -414,7 +411,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         itemBuilder: (BuildContext context, int index){
           var cat = tab.reqCategories[index];
           List<TableMaster>? table1 = tab.reqTables?.where((element) => element.tableCategory == cat).toList();
-          print("on refresh 22");
           return StickyHeader(
             header: Text(cat),
             content: loadGridContent(table1!, context),
@@ -424,7 +420,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
 
   segmentedControl() {
     return Consumer<SliderProvider>(builder: (context, slide, child) {
-      print("on slide change");
       return CustomSlidingSegmentedControl<int>(
         initialValue: 2,
         children: const {

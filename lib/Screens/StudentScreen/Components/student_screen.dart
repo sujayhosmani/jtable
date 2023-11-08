@@ -224,7 +224,6 @@ class _StudentProfileState extends State<StudentProfile> with AutomaticKeepAlive
     double minTileWidth = 120;
 
     double availableWidth = MediaQuery.of(context).size.width;
-    print(availableWidth);
     int i = availableWidth ~/ minTileWidth;
     return i;
 
@@ -388,7 +387,6 @@ class _StudentProfileState extends State<StudentProfile> with AutomaticKeepAlive
 
   segmentedControl() {
     return Consumer<SliderProvider>(builder: (context, slide, child) {
-      print("on slide change");
       return CustomSlidingSegmentedControl<int>(
         initialValue: 2,
         children: const {
