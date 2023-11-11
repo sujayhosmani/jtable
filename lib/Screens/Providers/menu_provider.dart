@@ -248,7 +248,7 @@ class MenuProvider with ChangeNotifier{
     });
     _selectedCatId = "999";
     _selectedSubCatId = "999";
-    if(isFromFilter){
+    if(!isFromFilter){
       onFiltersValuesChanged(values, true);
     }else{
       notifyListeners();
