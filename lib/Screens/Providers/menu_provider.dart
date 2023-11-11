@@ -26,6 +26,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class MenuProvider with ChangeNotifier{
 
+  Map<String, bool> values = {
+    'veg': false,
+    'non veg': false,
+    "egg": false
+  };
+
 
   List<Orders>? _cartItems;
   List<Orders>? get cartItems => _cartItems;
@@ -58,22 +64,6 @@ class MenuProvider with ChangeNotifier{
   List<MenuItems> get filterMenuItems => _filterMenuItems;
 
   final ApiBaseHelper _helper = ApiBaseHelper();
-
-  // Future<List<CategoriesMaster>?> GetCategories(BuildContext context) async {
-  //   try{
-  //     final response = await _helper.get("Menu/category", context);
-  //     print("network Model");
-  //     if(response != null){
-  //       _categories = List<CategoriesMaster>.from(response.map((model)=> CategoriesMaster.fromJson(model)));
-  //       notifyListeners();
-  //       return _categories;
-  //     }
-  //
-  //   }catch(e){
-  //     return null;
-  //   }
-  //
-  // }
 
   Future<List<SubCategory>?> GetSubCategories(BuildContext context) async {
     try{
@@ -114,71 +104,167 @@ class MenuProvider with ChangeNotifier{
 
   }
 
-  onSearch(String Val){
-    _subCategories?.forEach((subCat) {
-      // CategoriesMaster cat = CategoriesMaster(categoryName: subCat.categoryName, catImage: subCat.catImage, id: subCat.id);
-      // _categories?.add(cat);
-      subCat.subCategories?.forEach((subList) {
-        List<MenuItems>? itemsOfSubCategory = _menuItems?.where((menuItem) => menuItem.subCategoryId == subList.subCategoryId && subCat.id == menuItem.categoryId).toList();
-        itemsOfSubCategory?.forEach((element) {
-          Items? item = element.items;
-          if(item != null && item.itemName!.contains(Val)){
-            subList.items?.add(item!);
-          }
-        });
-      });
-    });
-    notifyListeners();
-  }
-
 
   MergeAll(){
-    // _subCategories?.forEach((subCat) {
-    //   subCat.subCategories?.forEach((subList) {
-    //       List<MenuItems>? itemsOfSubCategory = _menuItems?.where((menuItem) => menuItem.subCategoryId == subList.subCategoryId && subCat.id == menuItem.categoryId).toList();
-    //       itemsOfSubCategory?.forEach((element) {
-    //         Items? item = element.items;
-    //         subList.items?.add(item!);
-    //         subList.catId = subCat.id;
-    //       });
-    //   });
-    // });
-    // _filterSubCategories = subCategories.toList();
-    // print("zzzzzzzzzzzzzzzzzz" + (subCatz.subCategoryName ?? "") + (subCatz?.catId ?? ""));
-    // print("zzzzzzzzzzzzzzzzzz" + (subCatz.items?.length ?? 0).toString());
-    // print("qqqqqqqqqqqqqqq" + (element.itemName ?? ""));
-
     _subListCategoriesz = [];
     _subCategories.forEach((mainSubCatz) {
-          mainSubCatz.subCategories?.forEach((subCatz) {
-               subCatz.items = [];
-               var menuItemsz = _menuItems.where((element) => element.subCategoryId == subCatz.subCategoryId).toList();
-               List<Items> finalItems = [];
-               if(menuItemsz.length > 0){
-                 menuItemsz.forEach((mz) {
-                   Items? it = mz.items;
-                   if(it != null){
-                     finalItems.add(it);
-                   }
+      mainSubCatz.subCategories?.forEach((subCatz) {
+        subCatz.items = [];
+        var menuItemsz = _menuItems.where((element) => element.subCategoryId == subCatz.subCategoryId).toList();
+        List<Items> finalItems = [];
+        if(menuItemsz.length > 0){
+          menuItemsz.forEach((mz) {
+            Items? it = mz.items;
+            if(it != null){
+              finalItems.add(it);
+            }
 
-                 });
-                 subCatz.items = finalItems;
-                 subCatz.catId = menuItemsz.first.categoryId;
-                 _subListCategoriesz.add(subCatz);
-                 print("zzzzzzzzzzzzzzzzzz" + (subCatz?.items?.length ?? 0).toString());
-               }
           });
+          subCatz.items = finalItems;
+          subCatz.catId = menuItemsz.first.categoryId;
+          _subListCategoriesz.add(subCatz);
+          print("zzzzzzzzzzzzzzzzzz" + (subCatz?.items?.length ?? 0).toString());
+        }
+      });
     });
     _filterSubCategories = subCategories.toList();
     _filterSubListCategoriesz = subListCategoriesz.toList();
     filterSubListCategoriesz.forEach((f1) {
       print("zzzzzzzzzzzzzzzzzzqqqqq" + (f1.catId ?? ""));
       f1.items?.forEach((element) {
-
       });
     });
-    notifyListeners();
+    onFiltersValuesChanged(values, false);
     return _subCategories;
+  }
+
+
+  onFiltersValuesChanged(val, bool isFromSearch){
+    values = val;
+    if(isFromSearch){
+      if(!(values["veg"] ?? false) && !(values["egg"] ?? false) && !(values["non veg"] ?? false)){
+        notifyListeners();
+        return;
+      }
+
+      if((values["veg"] ?? false) && (values["egg"] ?? false) && (values["non veg"] ?? false)){
+        notifyListeners();
+        return;
+      }
+    }else{
+      if(!(values["veg"] ?? false) && !(values["egg"] ?? false) && !(values["non veg"] ?? false)){
+        if(_selectedCatId == "999"){
+          _filterSubListCategoriesz = subListCategoriesz.toList();
+        }else{
+          _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+        }
+        notifyListeners();
+        return;
+      }
+
+      if((values["veg"] ?? false) && (values["egg"] ?? false) && (values["non veg"] ?? false)){
+        if(_selectedCatId == "999"){
+          _filterSubListCategoriesz = subListCategoriesz.toList();
+        }else{
+          _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+        }
+        notifyListeners();
+        return;
+      }
+    }
+
+
+    List<SubCategories> filteredMenuItem = [];
+    if(isFromSearch){
+      filteredMenuItem = List<SubCategories>.from(jsonDecode(jsonEncode(filterSubListCategoriesz.toList())).map((model)=> SubCategories.fromJson(model)));
+    }else{
+      filteredMenuItem = List<SubCategories>.from(jsonDecode(jsonEncode(filterSubListCategoriesz.toList())).map((model)=> SubCategories.fromJson(model)));
+    }
+
+    filteredMenuItem.forEach((subCats) {
+      List<Items>? allItems = subCats.items?.toList();
+      subCats.items = [];
+      List<Items>? allVegItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'non veg') && (e.preference?.toLowerCase() != 'egg'))).toList();
+      List<Items>? allEggItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'veg') && (e.preference?.toLowerCase() != 'non veg'))).toList();
+      List<Items>? allNonVegItems = allItems?.where((e) => e.preference?.toLowerCase() != 'veg').toList();
+      print("veg: $allVegItems");
+      print("egg: $allEggItems");
+      print("non veg: $allNonVegItems");
+      print((values["veg"] ?? false));
+      if ((values["veg"] ?? false)) {
+        subCats.items = [...?allVegItems];
+      }
+      if ((values["egg"] ?? false)) {
+        subCats.items = [...?subCats.items, ...?allEggItems];
+      }
+      if ((values["non veg"] ?? false)) {
+        subCats.items = [...?subCats.items, ...?allNonVegItems];
+      }
+      subCats.items = [...Set.from(subCats.items ?? [])];
+      subCats.itemCount = subCats.items?.length ?? 0;
+    });
+    _filterSubListCategoriesz = filteredMenuItem.toList();
+
+    notifyListeners();
+  }
+
+
+
+  onSearch(String Val, bool isFromFilter){
+    if(Val.isEmpty){
+      _filterSubListCategoriesz = subListCategoriesz.toList();
+      notifyListeners();
+      return;
+    }
+    List<SubCategories> subCats = subListCategoriesz.toList();
+
+
+    List<SubCategories> searchedFinalItems = [];
+    subCats.forEach((mainSub) {
+      SubCategories sub = SubCategories();
+      sub.subCategoryName = mainSub.subCategoryName;
+      sub.subCategoryId = mainSub.subCategoryId;
+      sub.catId = mainSub.catId;
+      sub.status = mainSub.status;
+      sub.discount = mainSub.discount;
+      sub.itemCount = mainSub.itemCount;
+      sub.maxQuantity = mainSub.maxQuantity;
+      sub.items = [];
+      mainSub.items?.forEach((mainItem) {
+        if(mainItem.itemName?.toLowerCase().contains(Val.toLowerCase()) ?? false){
+          sub.items?.add(mainItem);
+          searchedFinalItems.add(sub);
+        }
+      });
+    });
+    _filterSubListCategoriesz = searchedFinalItems.toList();
+    filterSubListCategoriesz.forEach((f1) {
+      print("zzzzzzzzzzzzzzzzzzqqqqq" + (f1.catId ?? ""));
+      f1.items?.forEach((element) {
+      });
+    });
+    _selectedCatId = "999";
+    _selectedSubCatId = "999";
+    if(isFromFilter){
+      onFiltersValuesChanged(values, true);
+    }else{
+      notifyListeners();
+    }
+
+  }
+
+  updateCatIdAndSubCatId(String? catId, String? subCatId) {
+    _selectedCatId = catId ?? "999";
+    _selectedSubCatId = subCatId ?? "999";
+
+    print(_selectedSubCatId);
+    if(_selectedCatId == "999"){
+      _filterSubListCategoriesz = subListCategoriesz.toList();
+    }else{
+      _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+    }
+
+    onFiltersValuesChanged(values, false);
   }
 
   onAddFirstCartItem(Items item){
@@ -221,21 +307,7 @@ class MenuProvider with ChangeNotifier{
       notifyListeners();
   }
 
-  updateCatIdAndSubCatId(String? catId, String? subCatId) {
-    _selectedCatId = catId ?? "999";
-    _selectedSubCatId = subCatId ?? "999";
-    updateMenuToSelectedCatId();
-  }
 
-  void updateMenuToSelectedCatId() {
-    print(_selectedSubCatId);
-    if(_selectedCatId == "999"){
-      _filterSubListCategoriesz = subListCategoriesz.toList();
-    }else{
-      _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
-    }
 
-    notifyListeners();
-  }
 
 }

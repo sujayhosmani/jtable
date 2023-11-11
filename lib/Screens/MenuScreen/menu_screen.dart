@@ -5,7 +5,9 @@ import 'package:jtable/Models/MenuItems.dart';
 import 'package:jtable/Models/SubCategories.dart';
 import 'package:jtable/Models/SubCategory.dart';
 import 'package:jtable/Screens/MenuScreen/helping_widgets.dart';
+import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/menu_provider.dart';
+import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:provider/provider.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -19,6 +21,12 @@ class _MenuScreenState extends State<MenuScreen>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
   bool isFloating = false;
+  var _textController = TextEditingController();
+  Map<String, bool> values = {
+    'veg': false,
+    'non veg': false,
+    "egg": false
+  };
 
   @override
   void initState() {
@@ -31,6 +39,7 @@ class _MenuScreenState extends State<MenuScreen>
   void dispose() {
     super.dispose();
     _tabController!.dispose();
+    _textController.dispose();
   }
 
   @override
@@ -38,6 +47,7 @@ class _MenuScreenState extends State<MenuScreen>
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             showGeneralDialog(
               barrierLabel: "Label",
               barrierDismissible: true,
@@ -72,11 +82,90 @@ class _MenuScreenState extends State<MenuScreen>
         appBar: AppBar(
           title: Text("Add Items"),
           actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ElevatedButton(onPressed: (){
-                GetSubCategories();
-              }, child: Text("Menu")),
+            Row(
+              children: [
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.filter_list),
+                  onSelected: (String result) {
+                    switch (result) {
+                      case 'filter1':
+                        print('filter 1 clicked');
+                        break;
+                      case 'filter2':
+                        print('filter 2 clicked');
+                        break;
+                      case 'clearFilters':
+                        print('Clear filters');
+                        break;
+                      default:
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'veg',
+                      child: InkWell(
+                        onTap: (){
+                          values["veg"] = !values["veg"]!;
+                          Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Veg'),
+                            Checkbox(value: values["veg"], onChanged: (val){
+                              values["veg"] = val ?? false;
+                              Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                              Navigator.pop(context);
+                                 //
+                            })
+                          ],
+                        ),
+                      ),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'filter2',
+                      child: Text('Filter 2'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'clearFilters',
+                      child: Text('Clear filters'),
+                    ),
+                  ],
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (String result) {
+                    switch (result) {
+                      case 'refresh':
+                        Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
+                        break;
+                      case 'option2':
+                        print('option 2 clicked');
+                        break;
+                      case 'delete':
+                        print('I want to delete');
+                        break;
+                      default:
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'refresh',
+                      child: Text('Refresh Menu'),
+                    ),
+                    // const PopupMenuItem<String>(
+                    //   value: 'option2',
+                    //   child: Text('Option 2'),
+                    // ),
+                    // const PopupMenuItem<String>(
+                    //   value: 'delete',
+                    //   child: Text('Delete'),
+                    // ),
+                  ],
+                ),
+                IconButton(onPressed: (){}, icon: Icon(Icons.done_outline))
+
+              ],
             )
           ],
         ),
@@ -88,6 +177,13 @@ class _MenuScreenState extends State<MenuScreen>
                   children: <Widget>[
                     Expanded(
                       child: TextField(
+                        controller: _textController,
+                        onChanged: (val){
+
+                          setState(() {
+                            Provider.of<MenuProvider>(context, listen: false).onSearch(val, false);
+                          });
+                        },
                         decoration: InputDecoration(
                           hintText: 'Search for restaurants and food',
                           hintStyle:
@@ -102,19 +198,37 @@ class _MenuScreenState extends State<MenuScreen>
                     ),
                     // UIHelper.horizontalSpaceMedium(),
                     IconButton(
-                      icon: const Icon(Icons.search),
-                      onPressed: () {},
+                      icon: _textController.text.isEmpty ? Icon(Icons.search) : InkWell(onTap: (){_textController.clear();
+                        Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                        setState(() {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                      });},child: Icon(Icons.cancel)),
+                      onPressed: () {
+
+                      },
                     )
                   ],
                 ),
                 Expanded(
-                  child: Consumer<MenuProvider>(builder: (context, menu, child) {
-                        return _menuListView(menu);
-                      }
+                  child: GestureDetector(
+                    onVerticalDragDown: (DragD) {FocusManager.instance.primaryFocus?.unfocus();},
+                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                    child: Consumer<MenuProvider>(builder: (context, menu, child) {
+                          return _menuListView(menu);
+                        }
+                    ),
                   ),
                 ),
               ],
             ),
+            Consumer<GlobalProvider>(builder: (context, global, child) {
+              print(global.error);
+              return LoadingScreen(
+                isBusy: global.isBusy,
+                error: global.error ?? "",
+                onPressed: () {},
+              );
+            })
           ],
         )
     );
@@ -123,7 +237,7 @@ class _MenuScreenState extends State<MenuScreen>
   void GetSubCategories() {
     List<MenuItems>? menus = Provider.of<MenuProvider>(context, listen: false).filterMenuItems;
     if((menus?.length ?? 0) > 0){
-      Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
+      //Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
     }else{
       Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
     }
