@@ -233,9 +233,12 @@ class MenuProvider with ChangeNotifier{
       mainSub.items?.forEach((mainItem) {
         if(mainItem.itemName?.toLowerCase().contains(Val.toLowerCase()) ?? false){
           sub.items?.add(mainItem);
-          searchedFinalItems.add(sub);
         }
       });
+      if((sub.items?.length ?? 0) > 0){
+        searchedFinalItems.add(sub);
+      }
+
     });
     _filterSubListCategoriesz = searchedFinalItems.toList();
     filterSubListCategoriesz.forEach((f1) {
