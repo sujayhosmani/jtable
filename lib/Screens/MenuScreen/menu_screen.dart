@@ -11,7 +11,8 @@ import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:provider/provider.dart';
 
 class MenuScreen extends StatefulWidget {
-  const MenuScreen({super.key});
+  final String tableNo;
+  const MenuScreen({super.key, required this.tableNo});
 
   @override
   State<MenuScreen> createState() => _MenuScreenState();
@@ -27,6 +28,7 @@ class _MenuScreenState extends State<MenuScreen>
     'non veg': false,
     "egg": false
   };
+
 
   @override
   void initState() {
@@ -85,27 +87,18 @@ class _MenuScreenState extends State<MenuScreen>
             Row(
               children: [
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.filter_list),
-                  onSelected: (String result) {
-                    switch (result) {
-                      case 'filter1':
-                        print('filter 1 clicked');
-                        break;
-                      case 'filter2':
-                        print('filter 2 clicked');
-                        break;
-                      case 'clearFilters':
-                        print('Clear filters');
-                        break;
-                      default:
-                    }
-                  },
+                  icon: values.containsValue(true) ? Icon(Icons.filter_1) :  Icon(Icons.filter_list),
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                     PopupMenuItem<String>(
                       value: 'veg',
                       child: InkWell(
                         onTap: (){
                           values["veg"] = !values["veg"]!;
+                          setState(() {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            _textController.clear();
+                          });
+                          Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
                           Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
                           Navigator.pop(context);
                         },
@@ -115,6 +108,11 @@ class _MenuScreenState extends State<MenuScreen>
                             Text('Veg'),
                             Checkbox(value: values["veg"], onChanged: (val){
                               values["veg"] = val ?? false;
+                              setState(() {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                _textController.clear();
+                              });
+                              Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
                               Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
                               Navigator.pop(context);
                                  //
@@ -137,13 +135,8 @@ class _MenuScreenState extends State<MenuScreen>
                   onSelected: (String result) {
                     switch (result) {
                       case 'refresh':
-                        Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
-                        break;
-                      case 'option2':
-                        print('option 2 clicked');
-                        break;
-                      case 'delete':
-                        print('I want to delete');
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context, widget.tableNo);
                         break;
                       default:
                     }
@@ -153,17 +146,10 @@ class _MenuScreenState extends State<MenuScreen>
                       value: 'refresh',
                       child: Text('Refresh Menu'),
                     ),
-                    // const PopupMenuItem<String>(
-                    //   value: 'option2',
-                    //   child: Text('Option 2'),
-                    // ),
-                    // const PopupMenuItem<String>(
-                    //   value: 'delete',
-                    //   child: Text('Delete'),
-                    // ),
+
                   ],
                 ),
-                IconButton(onPressed: (){}, icon: Icon(Icons.done_outline))
+                IconButton(onPressed: (){FocusManager.instance.primaryFocus?.unfocus();}, icon: Icon(Icons.done_outline))
 
               ],
             )
@@ -198,7 +184,8 @@ class _MenuScreenState extends State<MenuScreen>
                     ),
                     // UIHelper.horizontalSpaceMedium(),
                     IconButton(
-                      icon: _textController.text.isEmpty ? Icon(Icons.search) : InkWell(onTap: (){_textController.clear();
+                      icon: _textController.text.isEmpty ? Icon(Icons.search) : InkWell(onTap: (){
+                        _textController.clear();
                         Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
                         setState(() {
                           FocusManager.instance.primaryFocus?.unfocus();
@@ -211,7 +198,7 @@ class _MenuScreenState extends State<MenuScreen>
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onVerticalDragDown: (DragD) {FocusManager.instance.primaryFocus?.unfocus();},
+                    // onVerticalDragDown: (DragD) {FocusManager.instance.primaryFocus?.unfocus();},
                     onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                     child: Consumer<MenuProvider>(builder: (context, menu, child) {
                           return _menuListView(menu);
@@ -235,11 +222,14 @@ class _MenuScreenState extends State<MenuScreen>
   }
 
   void GetSubCategories() {
-    List<MenuItems>? menus = Provider.of<MenuProvider>(context, listen: false).filterMenuItems;
+    List<MenuItems>? menus = Provider.of<MenuProvider>(context, listen: false).menuItems;
     if((menus?.length ?? 0) > 0){
-      //Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
+      Future.delayed(Duration.zero,(){
+        Provider.of<MenuProvider>(context, listen: false).onInitFirst(widget.tableNo);
+      });
+
     }else{
-      Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context);
+      Provider.of<MenuProvider>(context, listen: false).GetSubCategories(context, widget.tableNo);
     }
 
   }
@@ -388,24 +378,6 @@ class _MenuScreenState extends State<MenuScreen>
   }
 }
 
-Widget _menuListView2(MenuProvider menu){
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: ListView.builder(
-      itemCount: menu.filterMenuItems?.length,
-      itemBuilder: (context, index){
-        MenuItems? menuItem = menu.filterMenuItems?[index];
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            //menuItem != null ? FoodListView(foodsz: menuItem!) : Container(),
-          ],
-        );
-      },
-    ),
-  );
-}
 
 Widget _menuListView(MenuProvider menu){
   return Padding(

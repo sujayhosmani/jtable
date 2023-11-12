@@ -33,8 +33,10 @@ class MenuProvider with ChangeNotifier{
   };
 
 
-  List<Orders>? _cartItems;
-  List<Orders>? get cartItems => _cartItems;
+  String selectedTableNo = "";
+
+  List<Orders> _cartItems = [];
+  List<Orders> get cartItems => _cartItems;
 
   String _selectedCatId = "999";
   String get selectedCatId => _selectedCatId;
@@ -48,8 +50,6 @@ class MenuProvider with ChangeNotifier{
   List<SubCategory> _subCategories = [];
   List<SubCategory> get subCategories => _subCategories;
 
-  List<SubCategory>? _filterSubCategories;
-  List<SubCategory>? get filterSubCategories => _filterSubCategories;
 
   List<SubCategories> _subListCategoriesz = [];
   List<SubCategories> get subListCategoriesz => _subListCategoriesz;
@@ -60,13 +60,12 @@ class MenuProvider with ChangeNotifier{
   List<MenuItems> _menuItems = [];
   List<MenuItems> get menuItems => _menuItems;
 
-  List<MenuItems> _filterMenuItems = [];
-  List<MenuItems> get filterMenuItems => _filterMenuItems;
 
   final ApiBaseHelper _helper = ApiBaseHelper();
 
-  Future<List<SubCategory>?> GetSubCategories(BuildContext context) async {
+  Future<List<SubCategory>?> GetSubCategories(BuildContext context, String tableNo) async {
     try{
+      selectedTableNo = tableNo;
       final response = await _helper.get("subcategory/subcategory", context);
       print("network Model GetSubCategories" + response.toString());
       if(response != null){
@@ -93,7 +92,6 @@ class MenuProvider with ChangeNotifier{
       print("network Model GetMenuItems" + response.toString());
       if(response != null){
         _menuItems = List<MenuItems>.from(response.map((model)=> MenuItems.fromJson(model)));
-        _filterMenuItems = List<MenuItems>.from(response.map((model)=> MenuItems.fromJson(model)));
         MergeAll();
 
       }
@@ -127,7 +125,6 @@ class MenuProvider with ChangeNotifier{
         }
       });
     });
-    _filterSubCategories = subCategories.toList();
     _filterSubListCategoriesz = subListCategoriesz.toList();
     filterSubListCategoriesz.forEach((f1) {
       print("zzzzzzzzzzzzzzzzzzqqqqq" + (f1.catId ?? ""));
@@ -138,6 +135,20 @@ class MenuProvider with ChangeNotifier{
     return _subCategories;
   }
 
+  onInitFirst(String tableNo){
+    _filterSubListCategoriesz = subListCategoriesz.toList();
+    if(selectedTableNo == ""){
+      selectedTableNo = tableNo;
+    }else if(selectedTableNo != tableNo){
+      selectedTableNo = tableNo;
+      resetItems();
+    }else{
+      selectedTableNo = tableNo;
+      _filterSubListCategoriesz = subListCategoriesz.toList();
+      notifyListeners();
+    }
+
+  }
 
   onFiltersValuesChanged(val, bool isFromSearch){
     values = val;
@@ -204,6 +215,7 @@ class MenuProvider with ChangeNotifier{
       subCats.itemCount = subCats.items?.length ?? 0;
     });
     _filterSubListCategoriesz = filteredMenuItem.toList();
+
 
     notifyListeners();
   }
@@ -282,33 +294,188 @@ class MenuProvider with ChangeNotifier{
           itemImage: item.itemImage,
           price: item.price
       );
-      if((item.variations?.length ?? 0) > 0){
-        Variations? variation = item.variations?.where((e) => e.isSelected == true).firstOrNull;
-        if(variation?.isSelected ?? false){
-          cartItemAdd.varName = variation?.name;
-          cartItemAdd.price = variation?.price;
-          cartItemAdd.isVeriation = true;
-        }
-      }
       _cartItems?.add(cartItemAdd);
-      _filterMenuItems?.forEach((menuItem) {
-        if(cartItemAdd.isVeriation ?? false){
-          if(menuItem.itemId != null && menuItem.itemId == cartItemAdd.itemId){
-            menuItem.items?.variations?.forEach((ver) {
+      _filterSubListCategoriesz?.forEach((menuSubList) {
+        menuSubList.items?.forEach((menuItem) {
+          if(cartItemAdd.isVeriation ?? false){
+            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+              menuItem?.variations?.forEach((ver) {
                 if(ver.name == cartItemAdd.varName){
                   ver.quantity = 1;
                 }
-            });
+              });
 
+            }
+          }else{
+            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+              menuItem?.quantity = cartItemAdd.quantity;
+            }
           }
-        }else{
-          if(menuItem.itemId != null && menuItem.itemId == cartItemAdd.itemId){
-            menuItem.items?.quantity = cartItemAdd.quantity;
-          }
-        }
+        });
+
       });
       notifyListeners();
   }
+
+
+  onAddFirstVarCartItem(Items item, String varName){
+    Orders cartItemAdd = Orders(
+        description: item.description,
+        discount: 0,
+        preference: item.preference,
+        isVeriation: false,
+        itemId: item.id,
+        itemName: item.itemName,
+        quantity: 1,
+        itemImage: item.itemImage,
+        price: item.price
+    );
+
+    if ((item.variations?.length ?? 0) > 0) {
+      Variations? variation = item.variations?.firstWhere((e) => e.name == varName, orElse: () => Variations());
+      if (variation != null) {
+        cartItemAdd.varName = variation.name;
+        cartItemAdd.price = variation.price;
+        cartItemAdd.isVeriation = true;
+      }
+    }
+
+    _cartItems?.add(cartItemAdd);
+
+    _filterSubListCategoriesz?.forEach((menuSubList) {
+      menuSubList.items?.forEach((menuItem) {
+        int varCount = 0;
+        if(cartItemAdd.isVeriation ?? false){
+          if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+            menuItem?.variations?.forEach((ver) {
+              if(ver.name == cartItemAdd.varName){
+                ver.quantity = 1;
+                print(ver.name);
+                print(ver.quantity);
+              }
+              varCount = varCount + (ver.quantity ?? 0);
+            });
+
+          }
+        }
+        menuItem.quantity = varCount;
+        print(varCount);
+
+      });
+
+    });
+    notifyListeners();
+  }
+
+
+  void onPlus(Items item) {
+    int foundCart = _cartItems.indexWhere((cart) => cart.itemId == item.id);
+    if (foundCart != -1) {
+      _cartItems[foundCart].quantity = (_cartItems[foundCart]?.quantity ?? 0) + 1;
+      _filterSubListCategoriesz.forEach((element) {
+        element.items?.forEach((mItem) {
+          if(mItem.id == item.id){
+            mItem.quantity = _cartItems[foundCart].quantity;
+          }
+        });
+      });
+      notifyListeners();
+    }
+  }
+
+  void onVarPlus(Items item, String varName) {
+    int foundCart = _cartItems.indexWhere((e) => e.itemId == item.id && e.varName == varName);
+    if (foundCart != -1) {
+      _cartItems[foundCart].quantity = (_cartItems[foundCart]?.quantity ?? 0) + 1;
+
+      _filterSubListCategoriesz.forEach((element) {
+        element.items?.forEach((mItem) {
+          if(mItem.id == item.id){
+            int varCount = 0;
+            mItem.variations?.forEach((variation) {
+                if(variation.name == varName){
+                   variation.quantity = (variation.quantity ?? 0) + 1;
+                }
+                varCount = varCount + (variation.quantity ?? 0);
+            });
+            mItem.quantity = varCount;
+          }
+        });
+      });
+      notifyListeners();
+    }
+  }
+
+  void onMinus(Items item) {
+    int foundCart = _cartItems.indexWhere((cart) => cart.itemId == item.id);
+    if (foundCart != -1) {
+      int quantity = (_cartItems[foundCart]?.quantity ?? 0) - 1;
+      if (quantity <= 0) {
+        _cartItems.removeAt(foundCart);
+      } else {
+        _cartItems[foundCart].quantity = quantity;
+      }
+
+      if (foundCart != -1) {
+        _filterSubListCategoriesz.forEach((element) {
+          element.items?.forEach((mItem) {
+            if(mItem.id == item.id){
+              mItem.quantity = quantity;
+            }
+          });
+        });
+        notifyListeners();
+      }
+    }
+  }
+
+  void onVarMinus(Items item, String varName) {
+    int foundCart = cartItems.indexWhere((e) => e.itemId == item.id && e.varName == varName);
+    if (foundCart != -1) {
+      int quantity = (cartItems[foundCart]?.quantity ?? 0) - 1;
+      if (quantity <= 0) {
+        cartItems.removeAt(foundCart);
+      } else {
+        cartItems[foundCart].quantity = quantity;
+      }
+
+      if (foundCart != -1) {
+        _filterSubListCategoriesz.forEach((element) {
+          element.items?.forEach((mItem) {
+            if(mItem.id == item.id){
+              int varCount = 0;
+              mItem.variations?.forEach((variation) {
+                if(variation.name == varName){
+                  variation.quantity = quantity;
+                }
+                varCount = varCount + (variation.quantity ?? 0);
+              });
+              mItem.quantity = varCount;
+            }
+          });
+        });
+        notifyListeners();
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+  void resetItems() {
+    _cartItems = [];
+    _filterSubListCategoriesz.forEach((element) {
+      element.items?.forEach((eItems) {
+          eItems.quantity = 0;
+      });
+    });
+    notifyListeners();
+  }
+
 
 
 

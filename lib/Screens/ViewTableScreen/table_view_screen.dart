@@ -62,7 +62,7 @@ class _TableViewScreenState extends State<TableViewScreen> {
                           ElevatedButton(onPressed: () {
                             Navigator.push(context, MaterialPageRoute(
                                 builder: (BuildContext context) {
-                                  return MenuScreen();
+                                  return MenuScreen(tableNo: "",);
                                 }));
                           }, child: Text("Order")),
                           SizedBox(width: 6,),

@@ -201,20 +201,6 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             )),
           ),
         ),
-        Flexible(
-          flex: 1,
-          child: Container(
-            width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Add Items", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero
-              ),
-              backgroundColor: Colors.black87,
-              // padding: EdgeInsets.zero,
-              // tapTargetSize: MaterialTapTargetSize.shrinkWrap
-            )),
-          ),
-        ),
 
       ],
     );
@@ -500,7 +486,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
               ElevatedButton(onPressed: (){
                 Navigator.of(context).push(new MaterialPageRoute(
                     builder: (BuildContext context) {
-                      return MenuScreen();
+                      return MenuScreen(tableNo: widget.tableMaster.tableNo ?? "");
                     },
                     fullscreenDialog: true));
               }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
