@@ -9,6 +9,7 @@ import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/menu_provider.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 
 class MenuScreen extends StatefulWidget {
   final String tableNo;
@@ -121,13 +122,91 @@ class _MenuScreenState extends State<MenuScreen>
                         ),
                       ),
                     ),
-                    const PopupMenuItem<String>(
-                      value: 'filter2',
-                      child: Text('Filter 2'),
+                    PopupMenuItem<String>(
+                      value: 'non veg',
+                      child: InkWell(
+                        onTap: (){
+                          values["non veg"] = !values["non veg"]!;
+                          setState(() {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            _textController.clear();
+                          });
+                          Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                          Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Non veg'),
+                            Checkbox(value: values["non veg"], onChanged: (val){
+                              values["non veg"] = val ?? false;
+                              setState(() {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                _textController.clear();
+                              });
+                              Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                              Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                              Navigator.pop(context);
+                              //
+                            })
+                          ],
+                        ),
+                      ),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
+                      value: 'egg',
+                      child: InkWell(
+                        onTap: (){
+                          values["egg"] = !values["egg"]!;
+                          setState(() {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            _textController.clear();
+                          });
+                          Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                          Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                          Navigator.pop(context);
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Egg'),
+                            Checkbox(value: values["egg"], onChanged: (val){
+                              values["egg"] = val ?? false;
+                              setState(() {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                _textController.clear();
+                              });
+                              Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                              Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                              Navigator.pop(context);
+                              //
+                            })
+                          ],
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
                       value: 'clearFilters',
-                      child: Text('Clear filters'),
+                      child: InkWell(
+                        onTap: () {
+                          values["veg"] = false;
+                          values["non veg"] = false;
+                          values["egg"] = false;
+                          Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                          print(values["non veg"]);
+                          Provider.of<MenuProvider>(context, listen: false).onFiltersValuesChanged(values, _textController.text.isNotEmpty);
+                          setState(() {
+                            Navigator.pop(context);
+                          });
+
+                        },
+                          child: Row(
+                            children: [
+                              Text('Clear filters'),
+                            ],
+                          )
+                      ),
                     ),
                   ],
                 ),
@@ -149,7 +228,7 @@ class _MenuScreenState extends State<MenuScreen>
 
                   ],
                 ),
-                IconButton(onPressed: (){FocusManager.instance.primaryFocus?.unfocus();}, icon: Icon(Icons.done_outline))
+                IconButton(onPressed: (){FocusManager.instance.primaryFocus?.unfocus(); Navigator.pop(context);}, icon: Icon(Icons.done_outline))
 
               ],
             )
@@ -269,11 +348,14 @@ class _MenuScreenState extends State<MenuScreen>
               return InkWell(
                 onTap: () {
                   String id = "999";
+                  String itemId = "";
                   if((sub.subCategories?.length ?? 0) > 0){
                     id = sub.subCategories?.first?.subCategoryId ?? "999";
+                    itemId = sub.subCategories?.first?.items?.first.id ?? "";
                   }
                   Provider.of<MenuProvider>(context, listen: false).updateCatIdAndSubCatId(sub.id, id);
                   Navigator.pop(context);
+                  //Scrollable.ensureVisible(GlobalObjectKey(id + itemId).currentContext ?? context);
                 },
                 splashColor: Colors.grey,
                 highlightColor: Colors.red,
@@ -298,6 +380,7 @@ class _MenuScreenState extends State<MenuScreen>
                                 onTap: () {
                                   Provider.of<MenuProvider>(context, listen: false).updateCatIdAndSubCatId(sub.id, subListCat?.subCategoryId);
                                   Navigator.pop(context);
+                                  //Scrollable.ensureVisible(GlobalObjectKey((subListCat?.subCategoryId ?? "") + (subListCat?.items?.first.id ?? "")).currentContext ?? context);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
@@ -378,8 +461,41 @@ class _MenuScreenState extends State<MenuScreen>
   }
 }
 
-
 Widget _menuListView(MenuProvider menu){
+  return ListView.builder(
+    itemCount: menu.filterSubListCategoriesz?.length,
+    itemBuilder: (context, index){
+      SubCategories? subCats = menu.filterSubListCategoriesz?[index];
+      return StickyHeader(
+          header: Container(
+              //key: GlobalObjectKey((subCats?.subCategoryId ?? "") + (subCats?.items?.first?.id ?? "")),
+            color: Colors.blue,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(subCats?.subCategoryName ?? "", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),),
+                  ),
+                ],
+              )
+          ),
+          content: ListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: subCats?.items?.length,
+            itemBuilder: (context, index){
+              Items? item = subCats?.items?[index];
+              return FoodListView(foodsz: item);
+            },
+          )
+      );
+    },
+  );
+}
+
+
+Widget _menuListView2(MenuProvider menu){
   return Padding(
     padding: const EdgeInsets.all(8.0),
     child: ListView.builder(

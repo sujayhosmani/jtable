@@ -14,6 +14,7 @@ class SubCategories {
   SubCategories.fromJson(dynamic json) {
     subCategoryId = json['subCategoryId'];
     subCategoryName = json['subCategoryName'];
+    catId = json['catId'];
     if (json['items'] != null) {
       items = [];
       json['items'].forEach((v) {
@@ -39,6 +40,7 @@ class SubCategories {
     final map = <String, dynamic>{};
     map['subCategoryId'] = subCategoryId;
     map['subCategoryName'] = subCategoryName;
+    map['catId'] = catId;
     if (items != null) {
       map['items'] = items?.map((v) => v.toJson()).toList();
     }

@@ -125,18 +125,13 @@ class MenuProvider with ChangeNotifier{
         }
       });
     });
-    _filterSubListCategoriesz = subListCategoriesz.toList();
-    filterSubListCategoriesz.forEach((f1) {
-      print("zzzzzzzzzzzzzzzzzzqqqqq" + (f1.catId ?? ""));
-      f1.items?.forEach((element) {
-      });
-    });
+    _filterSubListCategoriesz = getSubcategory();
     onFiltersValuesChanged(values, false);
     return _subCategories;
   }
 
   onInitFirst(String tableNo){
-    _filterSubListCategoriesz = subListCategoriesz.toList();
+    _filterSubListCategoriesz = getSubcategory();
     if(selectedTableNo == ""){
       selectedTableNo = tableNo;
     }else if(selectedTableNo != tableNo){
@@ -144,7 +139,7 @@ class MenuProvider with ChangeNotifier{
       resetItems();
     }else{
       selectedTableNo = tableNo;
-      _filterSubListCategoriesz = subListCategoriesz.toList();
+      _filterSubListCategoriesz = getSubcategory();
       notifyListeners();
     }
 
@@ -165,9 +160,9 @@ class MenuProvider with ChangeNotifier{
     }else{
       if(!(values["veg"] ?? false) && !(values["egg"] ?? false) && !(values["non veg"] ?? false)){
         if(_selectedCatId == "999"){
-          _filterSubListCategoriesz = subListCategoriesz.toList();
+          _filterSubListCategoriesz = getSubcategory();
         }else{
-          _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+          _filterSubListCategoriesz = getSubcategory().where((element) => element.catId == _selectedCatId).toList();
         }
         notifyListeners();
         return;
@@ -175,9 +170,9 @@ class MenuProvider with ChangeNotifier{
 
       if((values["veg"] ?? false) && (values["egg"] ?? false) && (values["non veg"] ?? false)){
         if(_selectedCatId == "999"){
-          _filterSubListCategoriesz = subListCategoriesz.toList();
+          _filterSubListCategoriesz = getSubcategory();
         }else{
-          _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+          _filterSubListCategoriesz = getSubcategory().where((element) => element.catId == _selectedCatId).toList();
         }
         notifyListeners();
         return;
@@ -224,11 +219,11 @@ class MenuProvider with ChangeNotifier{
 
   onSearch(String Val, bool isFromFilter){
     if(Val.isEmpty){
-      _filterSubListCategoriesz = subListCategoriesz.toList();
+      _filterSubListCategoriesz = getSubcategory();
       notifyListeners();
       return;
     }
-    List<SubCategories> subCats = subListCategoriesz.toList();
+    List<SubCategories> subCats = getSubcategory();
 
 
     List<SubCategories> searchedFinalItems = [];
@@ -253,11 +248,7 @@ class MenuProvider with ChangeNotifier{
 
     });
     _filterSubListCategoriesz = searchedFinalItems.toList();
-    filterSubListCategoriesz.forEach((f1) {
-      print("zzzzzzzzzzzzzzzzzzqqqqq" + (f1.catId ?? ""));
-      f1.items?.forEach((element) {
-      });
-    });
+
     _selectedCatId = "999";
     _selectedSubCatId = "999";
     if(!isFromFilter){
@@ -274,9 +265,10 @@ class MenuProvider with ChangeNotifier{
 
     print(_selectedSubCatId);
     if(_selectedCatId == "999"){
-      _filterSubListCategoriesz = subListCategoriesz.toList();
+      _filterSubListCategoriesz = getSubcategory();
     }else{
-      _filterSubListCategoriesz = subListCategoriesz.where((element) => element.catId == _selectedCatId).toList();
+      List<SubCategories> mainList = getSubcategory();
+      _filterSubListCategoriesz = mainList.where((element) => element.catId == _selectedCatId).toList();
     }
 
     onFiltersValuesChanged(values, false);
@@ -314,6 +306,27 @@ class MenuProvider with ChangeNotifier{
         });
 
       });
+
+      _subListCategoriesz?.forEach((menuSubList) {
+        menuSubList.items?.forEach((menuItem) {
+          if(cartItemAdd.isVeriation ?? false){
+            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+              menuItem?.variations?.forEach((ver) {
+                if(ver.name == cartItemAdd.varName){
+                  ver.quantity = 1;
+                }
+              });
+
+            }
+          }else{
+            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+              menuItem?.quantity = cartItemAdd.quantity;
+            }
+          }
+        });
+
+      });
+
       notifyListeners();
   }
 
@@ -335,7 +348,7 @@ class MenuProvider with ChangeNotifier{
       Variations? variation = item.variations?.firstWhere((e) => e.name == varName, orElse: () => Variations());
       if (variation != null) {
         cartItemAdd.varName = variation.name;
-        cartItemAdd.price = variation.price;
+        cartItemAdd.price = (item.price ?? 0) + (variation.price ?? 0);
         cartItemAdd.isVeriation = true;
       }
     }
@@ -344,26 +357,41 @@ class MenuProvider with ChangeNotifier{
 
     _filterSubListCategoriesz?.forEach((menuSubList) {
       menuSubList.items?.forEach((menuItem) {
-        int varCount = 0;
+
         if(cartItemAdd.isVeriation ?? false){
           if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+            int varCount = 0;
             menuItem?.variations?.forEach((ver) {
               if(ver.name == cartItemAdd.varName){
                 ver.quantity = 1;
-                print(ver.name);
-                print(ver.quantity);
               }
               varCount = varCount + (ver.quantity ?? 0);
             });
-
+            menuItem.quantity = varCount;
           }
         }
-        menuItem.quantity = varCount;
-        print(varCount);
-
       });
-
     });
+
+    _subListCategoriesz?.forEach((menuSubList) {
+      menuSubList.items?.forEach((menuItem) {
+
+        if(cartItemAdd.isVeriation ?? false){
+          if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+            int varCount = 0;
+            menuItem?.variations?.forEach((ver) {
+              if(ver.name == cartItemAdd.varName){
+                ver.quantity = 1;
+              }
+              varCount = varCount + (ver.quantity ?? 0);
+            });
+            menuItem.quantity = varCount;
+          }
+        }
+      });
+    });
+
+
     notifyListeners();
   }
 
@@ -379,6 +407,15 @@ class MenuProvider with ChangeNotifier{
           }
         });
       });
+
+      _subListCategoriesz.forEach((element) {
+        element.items?.forEach((mItem) {
+          if(mItem.id == item.id){
+            mItem.quantity = _cartItems[foundCart].quantity;
+          }
+        });
+      });
+
       notifyListeners();
     }
   }
@@ -402,6 +439,22 @@ class MenuProvider with ChangeNotifier{
           }
         });
       });
+
+      _subListCategoriesz.forEach((element) {
+        element.items?.forEach((mItem) {
+          if(mItem.id == item.id){
+            int varCount = 0;
+            mItem.variations?.forEach((variation) {
+              if(variation.name == varName){
+                variation.quantity = (variation.quantity ?? 0) + 1;
+              }
+              varCount = varCount + (variation.quantity ?? 0);
+            });
+            mItem.quantity = varCount;
+          }
+        });
+      });
+
       notifyListeners();
     }
   }
@@ -424,6 +477,15 @@ class MenuProvider with ChangeNotifier{
             }
           });
         });
+
+        _subListCategoriesz.forEach((element) {
+          element.items?.forEach((mItem) {
+            if(mItem.id == item.id){
+              mItem.quantity = quantity;
+            }
+          });
+        });
+
         notifyListeners();
       }
     }
@@ -454,26 +516,120 @@ class MenuProvider with ChangeNotifier{
             }
           });
         });
+        _subListCategoriesz.forEach((element) {
+          element.items?.forEach((mItem) {
+            if(mItem.id == item.id){
+              int varCount = 0;
+              mItem.variations?.forEach((variation) {
+                if(variation.name == varName){
+                  variation.quantity = quantity;
+                }
+                varCount = varCount + (variation.quantity ?? 0);
+              });
+              mItem.quantity = varCount;
+            }
+          });
+        });
+
         notifyListeners();
       }
     }
   }
 
+  void onCartItemScreen({required bool isFromVar, required Orders cartItem, required bool isAdd, bool? isRemove}) {
+    int? foundCart;
+    if (isFromVar) {
+      foundCart = _cartItems.indexWhere((e) => (e.itemId == cartItem.itemId) && (e.varName == cartItem.varName));
+    } else {
+      foundCart = _cartItems.indexWhere((e) => (e.itemId == cartItem.itemId));
+    }
+    if (foundCart != null) {
+      int quantity = _cartItems[foundCart].quantity ?? 0;
+      int finalQuantity = isAdd ? quantity + 1 : quantity - 1;
+      if (isRemove == true) {
+        finalQuantity = 0;
+      }
+      if (finalQuantity <= 0) {
+        _cartItems.removeAt(foundCart);
+      } else {
+        _cartItems[foundCart].quantity = finalQuantity;
+      }
 
 
+      if (isFromVar) {
+        _subListCategoriesz.forEach((mList) {
+          mList.items?.forEach((mItem) {
+            if(mItem.id == cartItem.itemId){
+              int varCount = 0;
+              mItem.variations?.forEach((mVar) {
+                if(mVar.name == cartItem.varName){
+                    mVar.quantity = finalQuantity;
+                }
+                varCount = varCount + (mVar.quantity ?? 0);
+              });
+              mItem.quantity = varCount;
+            }
+          });
+        });
+        _filterSubListCategoriesz.forEach((mList) {
+          mList.items?.forEach((mItem) {
+            if(mItem.id == cartItem.itemId){
+              int varCount = 0;
+              mItem.variations?.forEach((mVar) {
+                if(mVar.name == cartItem.varName){
+                  mVar.quantity = finalQuantity;
+                }
+                varCount = varCount + (mVar.quantity ?? 0);
+              });
+              mItem.quantity = varCount;
+            }
+          });
+        });
+      } else {
+        _subListCategoriesz.forEach((mList) {
+          mList.items?.forEach((mItem) {
+            if(mItem.id == cartItem.itemId){
+              mItem.quantity = finalQuantity;
+            }
+          });
+        });
+        _filterSubListCategoriesz.forEach((mList) {
+          mList.items?.forEach((mItem) {
+            if(mItem.id == cartItem.itemId){
+              mItem.quantity = finalQuantity;
+            }
+          });
+        });
+      }
 
-
-
+      notifyListeners();
+    }
+  }
 
 
   void resetItems() {
     _cartItems = [];
-    _filterSubListCategoriesz.forEach((element) {
+    _subListCategoriesz.forEach((element) {
       element.items?.forEach((eItems) {
+        eItems.variations?.forEach((eVar) {
+          eVar.quantity = 0;
+        });
           eItems.quantity = 0;
       });
     });
+    _filterSubListCategoriesz.forEach((element) {
+      element.items?.forEach((eItems) {
+        eItems.variations?.forEach((eVar) {
+          eVar.quantity = 0;
+        });
+        eItems.quantity = 0;
+      });
+    });
     notifyListeners();
+  }
+
+  List<SubCategories> getSubcategory() {
+    return List<SubCategories>.from(jsonDecode(jsonEncode(subListCategoriesz.toList())).map((model)=> SubCategories.fromJson(model)));
   }
 
 

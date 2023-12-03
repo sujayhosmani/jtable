@@ -3,8 +3,10 @@ import 'package:jtable/Helpers/Utils.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
+import 'package:jtable/Screens/MenuScreen/helping_widgets.dart';
 import 'package:jtable/Screens/MenuScreen/menu_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
+import 'package:jtable/Screens/Providers/menu_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
@@ -22,10 +24,11 @@ class TableDetailScreen extends StatefulWidget {
 
 class _TableDetailScreenState extends State<TableDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<Orders> cartItems = [];
   void initState() {
     super.initState();
-    cartItems = [];
+    Future.delayed(Duration.zero,(){
+      Provider.of<MenuProvider>(context, listen: false).onInitFirst(widget.tableMaster.tableNo ?? "");
+    });
     Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
         context,
         widget.tableMaster.occupiedById ?? "",
@@ -47,20 +50,32 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             addItemAction(),
           ],
         ),
-      body: Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            buildPrimaryTopBar(slide.selectedVal),
-            buildTabBar(slide, orders),
-            buildTabBarView(slide, orders),
-            //buildOtherViews(slide.selectedVal),
-            Consumer<FooterProvider>(builder: (context, footer, child) {
-              return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
-            })
-          ],
-        );
-      })
+      body: Stack(
+        children: [
+          Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                buildPrimaryTopBar(slide.selectedVal),
+                buildTabBar(slide, orders),
+                buildTabBarView(slide, orders),
+                //buildOtherViews(slide.selectedVal),
+                Consumer<FooterProvider>(builder: (context, footer, child) {
+                  return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
+                })
+              ],
+            );
+          }),
+          Consumer<GlobalProvider>(builder: (context, global, child) {
+            print(global.error);
+            return LoadingScreen(
+              isBusy: global.isBusy,
+              error: global.error ?? "",
+              onPressed: () {},
+            );
+          })
+        ],
+      )
 
     );
   }
@@ -256,7 +271,13 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     return Padding(
         padding: const EdgeInsets.only(top: 5),
         // child: IconButton(onPressed: ()=>print("sdg"), icon: Icon(Icons.add_circle_rounded),),
-        child: ElevatedButton(onPressed: ()=>print(""), child: Text("Add Items", style: TextStyle(color: Colors.white),),
+        child: ElevatedButton(onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (BuildContext context) {
+                return MenuScreen(tableNo: widget.tableMaster.tableNo ?? "");
+              },
+              fullscreenDialog: true));
+        }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
           style: ElevatedButton.styleFrom(
               backgroundColor: Colors.black87,
               shape: const RoundedRectangleBorder(
@@ -381,6 +402,60 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     );
   }
 
+  buildCartItems(BuildContext context, Orders? cartItem) {
+    Orders? foods = cartItem; //.items;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1))
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0,5,0,0),
+            child: foods?.preference?.toLowerCase() == "veg" ?  const VegBadgeView() : foods?.preference?.toLowerCase() == "non veg" ? const NonVegBadgeView()  : Container(),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text( foods?.itemName ?? "", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blue.shade900),),
+                ),
+
+                foods?.varName != null && foods?.varName != "" ? Text(
+                  foods?.varName ?? "",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyText1!
+                      .copyWith(
+                    fontSize: 12.0,
+                    color: Colors.grey[500],
+                  ),
+                ) : Container(),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0,0,10,0),
+            child: Text(foods?.varName != null && foods?.varName != "" ? foods?.price.toString() ?? ""  : foods?.price.toString() ?? "", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
+          ),
+          CartBtnView(quantity: foods?.quantity ?? 0, onItemPlus: (){
+            Provider.of<MenuProvider>(context, listen: false).onCartItemScreen(isFromVar: (foods?.isVeriation ?? false), cartItem: foods!, isAdd: true, isRemove: false);
+          }, onItemMinus: () {
+            Provider.of<MenuProvider>(context, listen: false).onCartItemScreen(isFromVar: (foods?.isVeriation ?? false), cartItem: foods!, isAdd: false, isRemove: false);
+          },)
+
+        ],
+      ),
+    );
+  }
+
   buildOrdersSecWidgets(name, i, int selectedVal, context){
     return Flexible(
       flex: 1,
@@ -471,33 +546,45 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
 
+  emptyCartView(){
+    return Container(
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text("There are no items in cart"),
+          ElevatedButton(onPressed: (){
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) {
+                  return MenuScreen(tableNo: widget.tableMaster.tableNo ?? "");
+                },
+                fullscreenDialog: true));
+          }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87
+            ),)
+        ],
+      ),);
+  }
+
 
   buildOtherViews(selectedVal) {
 
     switch(selectedVal){
       case 1: return Container(child: Text("Table"),);
       case 2: {
-        return Container(
-          width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("There are no items in cart"),
-              ElevatedButton(onPressed: (){
-                Navigator.of(context).push(new MaterialPageRoute(
-                    builder: (BuildContext context) {
-                      return MenuScreen(tableNo: widget.tableMaster.tableNo ?? "");
-                    },
-                    fullscreenDialog: true));
-              }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black87
-              ),)
-            ],
-          ),);
+        return Consumer<MenuProvider>(builder: (context, menu, child){
+            return (menu.cartItems.length ?? 0) <= 0 ? emptyCartView() :
+            ListView.builder(
+              itemCount: menu.cartItems.length,
+                itemBuilder: (BuildContext context, int index){
+                Orders? ord = menu.cartItems?[index];
+                return buildCartItems(context, ord);
+            });
+        });
       }
       case 4: return Container(child: Text("bill"),);
-      default: return Container(child: Text("default"),);
+      default: return Container();
     }
   }
 
