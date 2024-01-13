@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:jtable/Helpers/Constants.dart';
 import 'package:jtable/Helpers/auth_service.dart';
 import 'package:jtable/Models/Auth.dart';
+import 'package:jtable/Models/LoggedInUserPost.dart';
 import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
@@ -43,15 +44,13 @@ class LoggedInProvider with ChangeNotifier{
 
   }
 
-  UpdateLoggedIN(LoggedInUsers? loggedIn, BuildContext context) async{
+  Future<bool?> InsertLoggedIN(LoggedInUsersPost? loggedIn, BuildContext context) async{
     try{
-      final response = await _helper.post("home/loggedInUser", loggedIn?.toJson(),  context);
+      final response = await _helper.post("login/loggedInUser", loggedIn?.toJson(),  context);
       if(response != null){
-        //await Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
-        await GetAllNotifications(context);
-        // get new notification and new table
+        return true;
       }
-
+      return null;
     }catch(e){
       return null;
     }

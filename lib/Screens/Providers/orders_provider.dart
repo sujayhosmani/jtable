@@ -47,6 +47,8 @@ class OrdersProvider with ChangeNotifier{
       if(response != null){
         _orders = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
         fillOtherOrders(List<Orders>.from(response.map((model)=> Orders.fromJson(model))), List<Orders>.from(response.map((model)=> Orders.fromJson(model))));
+        print("notifyinggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg");
+        print(_orders?.length);
         notifyListeners();
         return _orders;
       }
@@ -78,6 +80,9 @@ class OrdersProvider with ChangeNotifier{
   }
 
 
+  confirmCart(){
+
+  }
 
 
   UpdateOrder(List<Orders>? order, BuildContext context, String orderId, String tableNo) async {

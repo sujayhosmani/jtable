@@ -13,6 +13,7 @@ import 'package:jtable/Network/ApiBaseHelper.dart';
 import 'package:jtable/Network/ApiResponse.dart';
 import 'package:jtable/Network/network_repo.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
+import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,6 +81,41 @@ class TablesProvider with ChangeNotifier{
       loadCategories();
       notifyListeners();
     }
+  }
+
+
+  Future<TableMaster?> onTableDetailViewPage(BuildContext context, String tableNo) async {
+    int? index = _tableMaster?.indexWhere((element) => element.tableNo == tableNo);
+    List<TableMaster>? master = await GetTableByTableId(context, tableNo);
+
+    if(index != null){
+      TableMaster? val = master?[index];
+      if(master?[index].isOccupied ?? false){
+        Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
+            context,
+            val?.occupiedById ?? "",
+            val?.tableNo ?? "");
+      }
+      if(val != null){
+        return val;
+      }
+
+    }
+    return null;
+
+  }
+
+  Future<TableMaster?> onUserSubmit(BuildContext context, String tableNo) async {
+    int? index = _tableMaster?.indexWhere((element) => element.tableNo == tableNo);
+    List<TableMaster>? master = await GetTableByTableId(context, tableNo);
+    if(index != null){
+      TableMaster? val = master?[index];
+      if(val != null){
+        return val;
+      }
+
+    }
+    return null;
   }
 
   Future<List<TableMaster>?> GetTableByTableId(BuildContext context, String tableNo) async {

@@ -18,7 +18,7 @@ class Orders {
       this.assignedId, 
       this.assignedName, 
       this.status, 
-      this.isAccepted, 
+
       this.cancelledByName, 
       this.cancelledById, 
       this.remarks, 
@@ -26,7 +26,7 @@ class Orders {
       this.tableNo, 
       this.tableId, 
       this.orderNo,
-      this.isRunning,
+
       this.id,
       this.code, 
       this.createdDateTime, 
@@ -40,7 +40,9 @@ class Orders {
       this.insertedById,
       this.insertedByName,
       this.insertedByPh,
-      this.isCancelled,
+    // this.isAccepted,
+    // this.isRunning,
+    // this.isCancelled,
       this.loggedInStatus});
 
   Orders.fromJson(dynamic json) {
@@ -62,7 +64,7 @@ class Orders {
     assignedId = json['assignedId'];
     assignedName = json['assignedName'];
     status = json['status'];
-    isAccepted = json['isAccepted'];
+
     cancelledByName = json['cancelledByName'];
     cancelledById = json['cancelledById'];
     remarks = json['remarks'];
@@ -70,7 +72,7 @@ class Orders {
     tableNo = json['tableNo'];
     tableId = json['tableId'];
     orderNo = json['orderNo'];
-    isRunning = json['isRunning'];
+
     id = json['id'];
     code = json['code'];
     createdDateTime = json['createdDateTime'];
@@ -85,8 +87,12 @@ class Orders {
     insertedById = json['insertedById'];
     insertedByName = json['insertedByName'];
     insertedByPh = json['insertedByPh'];
-    isCancelled = json['isCancelled'];
+
     loggedInStatus = json['loggedInStatus'];
+
+    // isAccepted = json['isAccepted'];
+    // isRunning = json['isRunning'];
+    // isCancelled = json['isCancelled'];
 
   }
   String? itemId;
@@ -107,12 +113,12 @@ class Orders {
   String? assignedId;
   String? assignedName;
   String? status;
-  bool? isAccepted;
+
   String? instructions;
   String? tableNo;
   String? tableId;
   int? orderNo;
-  bool? isRunning;
+
   String? cancelledByName;
   String? cancelledById;
   String? remarks;
@@ -127,11 +133,15 @@ class Orders {
   String? addedByPh;
   String? assignedPh;
   String? loggedInStatus;
-  bool? isCancelled;
+
   String? insertedBy;
   String? insertedById;
   String? insertedByName;
   String? insertedByPh;
+
+  // bool? isAccepted;
+  // bool? isRunning;
+  // bool? isCancelled;
 
 
 
@@ -155,7 +165,7 @@ class Orders {
     map['assignedId'] = assignedId;
     map['assignedName'] = assignedName;
     map['status'] = status;
-    map['isAccepted'] = isAccepted;
+
     map['cancelledByName'] = cancelledByName;
     map['cancelledById'] = cancelledById;
     map['remarks'] = remarks;
@@ -163,7 +173,7 @@ class Orders {
     map['tableNo'] = tableNo;
     map['tableId'] = tableId;
     map['orderNo'] = orderNo;
-    map['isRunning'] = isRunning;
+
     map['id'] = id;
     map['code'] = code;
     map['createdDateTime'] = createdDateTime;
@@ -178,8 +188,12 @@ class Orders {
     map['insertedById'] = insertedById;
     map['insertedByName'] = insertedByName;
     map['insertedByPh'] = insertedByPh;
-    map['isCancelled'] = isCancelled;
+
     map['loggedInStatus'] = loggedInStatus;
+
+    // map['isRunning'] = isRunning;
+    // map['isAccepted'] = isAccepted;
+    // map['isCancelled'] = isCancelled;
     return map;
   }
 

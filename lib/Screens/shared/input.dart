@@ -4,8 +4,9 @@ class InputText extends StatelessWidget {
   final String? title;
   final bool? isPassword;
   final IconData? icon;
+  final TextEditingController mCtrl;
 
-  const InputText({Key? key, this.title, this.isPassword = false, this.icon}) : super(key: key);
+  const InputText({Key? key, this.title, this.isPassword = false, this.icon, required this.mCtrl}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,7 +17,7 @@ class InputText extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 30, vertical: 0),
       child: TextField(
         obscureText: isPassword!,
-        // controller: mUserName,
+         controller: mCtrl,
         decoration: InputDecoration(
             hintText: title,
             prefixIcon: Icon(icon),

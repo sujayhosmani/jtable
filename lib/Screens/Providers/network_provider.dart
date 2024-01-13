@@ -22,6 +22,12 @@ class NetworkProvider with ChangeNotifier{
 
   Users? get users => _users;
 
+  String? resUniq;
+  String? id;
+  String? phone;
+  String? resId;
+  String? role;
+
   final ApiBaseHelper _helper = ApiBaseHelper();
 
   NetworkProvider()  {
@@ -52,6 +58,7 @@ class NetworkProvider with ChangeNotifier{
       print(userValues);
       Users user = Users.fromJson(jsonDecode(userValues));
       _users = user;
+      setToken(_users?.token);
       notifyListeners();
     }
   }
@@ -59,6 +66,52 @@ class NetworkProvider with ChangeNotifier{
   saveToSharedPreference() async {
     prefs = await SharedPreferences.getInstance();
     prefs?.setString(loginUser, jsonEncode(_users?.toJson()));
+    setToken(_users?.token);
+  }
+
+  Map<String, dynamic> parseJwt(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      throw Exception('invalid token');
+    }
+
+    final payload = _decodeBase64(parts[1]);
+    final payloadMap = json.decode(payload);
+    if (payloadMap is! Map<String, dynamic>) {
+      throw Exception('invalid payload');
+    }
+
+    return payloadMap;
+  }
+
+  String _decodeBase64(String str) {
+    String output = str.replaceAll('-', '+').replaceAll('_', '/');
+
+    switch (output.length % 4) {
+      case 0:
+        break;
+      case 2:
+        output += '==';
+        break;
+      case 3:
+        output += '=';
+        break;
+      default:
+        throw Exception('Illegal base64url string!"');
+    }
+
+    return utf8.decode(base64Url.decode(output));
+  }
+
+  void setToken(String? token) {
+    if (token != null) {
+      Map<String, dynamic> jCur = parseJwt(token ?? "");
+      resUniq = jCur['ResUniq'];
+      id = jCur['Id'];
+      phone = jCur['Phone'];
+      resId = jCur['ResId'];
+      role = jCur['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    }
   }
 
 }

@@ -16,6 +16,9 @@ import '../shared/input.dart';
 
 class MainLogin extends StatelessWidget {
 
+  TextEditingController mUserName = TextEditingController();
+  TextEditingController mPassword = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,9 +59,9 @@ class MainLogin extends StatelessWidget {
                       child: Align(alignment: Alignment.topLeft, child: Text("Login", textAlign: TextAlign.left, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),)),
                     ),
                     SizedBox(height: 6,),
-                    InputText(isPassword: false,title: "Username",icon: Icons.person,),
+                    InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
                     SizedBox(height: 15,),
-                    InputText(isPassword: true,title: "Password",icon: Icons.lock,),
+                    InputText(isPassword: true,title: "Password",icon: Icons.lock, mCtrl: mPassword),
                     SizedBox(height: 18,),
 
                     Container(

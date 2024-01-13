@@ -1,16 +1,26 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/Utils.dart';
+import 'package:jtable/Models/LoggedInUserPost.dart';
+import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
 import 'package:jtable/Screens/MenuScreen/helping_widgets.dart';
 import 'package:jtable/Screens/MenuScreen/menu_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
+import 'package:jtable/Screens/Providers/logged_inProvider.dart';
 import 'package:jtable/Screens/Providers/menu_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
+import 'package:jtable/Screens/Providers/tables_provider.dart';
+import 'package:jtable/Screens/TableDetalView/Components/bill_detail_view.dart';
+import 'package:jtable/Screens/TableDetalView/Components/table_detail_view_screen.dart';
 import 'package:jtable/Screens/ViewTableScreen/table_view_screen.dart';
+import 'package:jtable/Screens/shared/input.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -23,17 +33,42 @@ class TableDetailScreen extends StatefulWidget {
 }
 
 class _TableDetailScreenState extends State<TableDetailScreen> with SingleTickerProviderStateMixin {
+  late TableMaster finalTable;
   late TabController _tabController;
+  TextEditingController mUserName = TextEditingController();
+  TextEditingController mPhoneNumber = TextEditingController();
+  TextEditingController mNoOfPeople = TextEditingController();
   void initState() {
     super.initState();
+    finalTable = widget.tableMaster;
     Future.delayed(Duration.zero,(){
-      Provider.of<MenuProvider>(context, listen: false).onInitFirst(widget.tableMaster.tableNo ?? "");
+      Provider.of<MenuProvider>(context, listen: false).onInitFirst(finalTable.tableNo ?? "");
     });
-    Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
-        context,
-        widget.tableMaster.occupiedById ?? "",
-        widget.tableMaster.tableNo ?? "");
+
+    callTheMethod();
     _tabController = new TabController(vsync: this, length: 4);
+  }
+
+  callTheMethod() async {
+    TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onTableDetailViewPage(context, finalTable.tableNo ?? "");
+    if(mas != null){
+      setState(() {
+        finalTable = mas;
+      });
+
+    }
+
+  }
+
+  callTheMethodOnlyTable() async {
+    TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onUserSubmit(context, finalTable.tableNo ?? "");
+    if(mas != null){
+      setState(() {
+        finalTable = mas;
+      });
+
+    }
+
   }
 
   @override
@@ -41,18 +76,22 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            widget.tableMaster.tableNo ?? "",
+            finalTable.tableNo ?? "",
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 30),
           ),
           actions: [
 
-            TextButton(onPressed: () {}, child: Text("otp: ${widget.tableMaster.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
-            addItemAction(),
+            TextButton(onPressed: () {}, child: Text("otp: ${finalTable.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
+            finalTable.isOccupied ?? false ? addItemAction() : Container(),
           ],
         ),
       body: Stack(
         children: [
+          // (finalTable.isOccupied ?? false)
+          //     ?
           Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
+            print("consuminhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+            print(orders.pending_orders?.length ?? 0);
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -66,6 +105,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
               ],
             );
           }),
+              // : fillUserDetails(),
           Consumer<GlobalProvider>(builder: (context, global, child) {
             print(global.error);
             return LoadingScreen(
@@ -206,7 +246,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Confirm", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+            child: ElevatedButton(onPressed: ()=> onConfirmCart(), child: Text("Confirm", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -274,7 +314,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
         child: ElevatedButton(onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) {
-                return MenuScreen(tableNo: widget.tableMaster.tableNo ?? "");
+                return MenuScreen(tableNo: finalTable.tableNo ?? "");
               },
               fullscreenDialog: true));
         }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
@@ -556,7 +596,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
           ElevatedButton(onPressed: (){
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext context) {
-                  return MenuScreen(tableNo: widget.tableMaster.tableNo ?? "");
+                  return MenuScreen(tableNo: finalTable.tableNo ?? "");
                 },
                 fullscreenDialog: true));
           }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
@@ -571,7 +611,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   buildOtherViews(selectedVal) {
 
     switch(selectedVal){
-      case 1: return Container(child: Text("Table"),);
+      case 1: return const TableDetailViewScreen();
       case 2: {
         return Consumer<MenuProvider>(builder: (context, menu, child){
             return (menu.cartItems.length ?? 0) <= 0 ? emptyCartView() :
@@ -583,8 +623,102 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             });
         });
       }
-      case 4: return Container(child: Text("bill"),);
+      case 4: return const BillDetailViewScreen();
       default: return Container();
+    }
+  }
+
+  onConfirmCart() {
+    Users? loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
+    List<Orders> cartItems = Provider.of<MenuProvider>(context, listen: false).cartItems;
+    cartItems.forEach((data) {
+      data.addedById = finalTable.occupiedById;
+      data.tableNo = finalTable.tableNo;
+      data.tableId = finalTable.id;
+      data.ordersId = finalTable.occupiedById;
+      data.insertedBy = loggedInUser?.role;
+      data.insertedById = loggedInUser?.id;
+      data.insertedByName = loggedInUser?.name;
+      data.insertedByPh = loggedInUser?.phone;
+      data.status = "pending";
+    });
+    print(json.encode(finalTable));
+    print("--------------------------------------------------------------------------------------------------");
+    print(finalTable.occupiedById);
+    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, finalTable.occupiedById ?? "", finalTable.tableNo ?? "");
+
+  }
+
+  fillUserDetails() {
+    return Column(
+      children: [
+        SizedBox(height: 8,),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(child: Text("Enter the user details", style: TextStyle(fontSize: 18, ),)),
+        ),
+        SizedBox(height: 6,),
+        InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
+        SizedBox(height: 15,),
+        InputText(isPassword: false,title: "Phone number",icon: Icons.phone, mCtrl: mPhoneNumber),
+        SizedBox(height: 15,),
+        InputText(isPassword: false,title: "No of people",icon: Icons.group, mCtrl: mNoOfPeople),
+        SizedBox(height: 15,),
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              gradient: Utils.btnGradient
+          ),
+          margin: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
+          child: TextButton(
+            style: TextButton.styleFrom(
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: EdgeInsets.symmetric(vertical: 15),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(60)
+                )
+            ),
+
+            child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+            onPressed: () { onUserSubmit(); },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void onUserSubmit() async {
+    TableMaster? tableDetails = await Provider.of<TablesProvider>(context, listen: false).onUserSubmit(context, finalTable.tableNo ?? "");
+    if(tableDetails != null){
+      if (tableDetails.isOccupied == false){
+        Users? loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
+        Provider.of<NetworkProvider>(context, listen: false).setToken(loggedInUser?.token);
+        String? valResUniq = Provider.of<NetworkProvider>(context, listen: false).resUniq;
+        LoggedInUsersPost createUser = LoggedInUsersPost();
+        createUser.insertedBy = loggedInUser?.role;
+        createUser.name = mUserName.text;
+        createUser.phone = mPhoneNumber.text;
+        createUser.noOfPeople = int.parse(mNoOfPeople.text);
+        createUser.isFirst = true;
+        createUser.tableId = tableDetails.id;
+        createUser.tableNo = tableDetails.tableNo;
+        createUser.otpById = loggedInUser?.id;
+        createUser.otpByName = loggedInUser?.name;
+        createUser.otpByPh = loggedInUser?.phone;
+        createUser.status = "entered";
+        createUser.resUniq = valResUniq ?? "";
+
+        print(json.encode(createUser));
+        bool? isInserted = await Provider.of<LoggedInProvider>(context, listen: false).InsertLoggedIN(createUser, context);
+        if(isInserted != null){
+          if(isInserted){
+            callTheMethod();
+          }
+        }
+      }else{
+        callTheMethod();
+      }
     }
   }
 

@@ -1,39 +1,35 @@
 import 'package:flutter/src/widgets/framework.dart';
 
-class LoggedInUsers {
-  LoggedInUsers({
-      this.name, 
-      this.ordersId, 
-      this.tableId, 
-      this.phone, 
-      this.tableNo, 
-      this.email, 
-      this.dateOf, 
-      this.monthOf, 
-      this.otp, 
-      this.otpById, 
-      this.otpByName, 
-      this.otpByPh, 
-      this.status, 
-      this.isFirst,
-      this.id, 
-      this.code, 
-      this.createdDateTime, 
-      this.updatedDateTime, 
-      this.isActive, 
-      this.createdBy,
+class LoggedInUsersPost {
+  LoggedInUsersPost({
+    this.name,
+    this.ordersId,
+    this.tableId,
+    this.phone,
+    this.tableNo,
+    this.email,
+    this.dateOf,
+    this.monthOf,
+    this.otp,
+    this.otpById,
+    this.otpByName,
+    this.otpByPh,
+    this.status,
+    this.isFirst,
+    this.id,
+    this.code,
+    this.createdDateTime,
+    this.updatedDateTime,
+    this.isActive,
+    this.createdBy,
     this.insertedBy,
     this.noOfPeople,
     this.token,
-    this.amount,
-    this.count,
-    this.finalStatusCode,
-    this.isBilled,
-    this.ratingFromStaff,
-    this.resUniq,
-      this.updatedBy,});
 
-  LoggedInUsers.fromJson(dynamic json) {
+    this.resUniq,
+    this.updatedBy,});
+
+  LoggedInUsersPost.fromJson(dynamic json) {
     name = json['name'];
     ordersId = json['ordersId'];
     tableId = json['tableId'];
@@ -59,11 +55,7 @@ class LoggedInUsers {
     insertedBy = json['insertedBy'];
     noOfPeople = json['noOfPeople'];
     token = json['token'];
-    amount = json['amount'];
-    count = json['count'];
-    finalStatusCode = json['finalStatusCode'];
-    isBilled = json['isBilled'];
-    ratingFromStaff = json['ratingFromStaff'];
+
 
     resUniq = json['resUniq'];
   }
@@ -91,11 +83,7 @@ class LoggedInUsers {
   String? insertedBy;
   String? token;
   int? noOfPeople;
-  int? finalStatusCode;
-  int? amount;
-  bool? isBilled;
-  int? ratingFromStaff;
-  int? count;
+
   String? resUniq;
 
   Map<String, dynamic> toJson() {
@@ -123,13 +111,8 @@ class LoggedInUsers {
     map['updatedBy'] = updatedBy;
 
     map['insertedBy'] = insertedBy;
-     map['noOfPeople'] = noOfPeople;
-     map['token'] = token;
-     map['amount'] = amount;
-     map['count'] = count;
-     map['finalStatusCode'] = finalStatusCode;
-     map['isBilled'] = isBilled;
-     map['ratingFromStaff'] = ratingFromStaff;
+    map['noOfPeople'] = noOfPeople;
+    map['token'] = token;
     map['resUniq'] = resUniq;
 
     return map;
