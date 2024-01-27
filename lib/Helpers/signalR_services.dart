@@ -2,7 +2,10 @@
 import 'dart:io';
 
 import 'package:jtable/Helpers/Constants.dart';
+import 'package:jtable/Helpers/navigation_service.dart';
+import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
+import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:signalr_flutter/signalr_flutter.dart';
@@ -41,17 +44,14 @@ class SignalRService with ChangeNotifier{
 
 
 
-          connection.on('SendTableDetails', (args) {
-            print("signalRService on Table details Received" + args.toString());
-            List<TableMaster> tableById = List<TableMaster>.from(args.map((model)=> TableMaster.fromJson(model)));
-            print(tableById.length);
-            Provider.of<TablesProvider>(cntx, listen: false).updateFromSignalR(tableById);
-          },);
+
 
 
           await connection.startAsync();
-          await connection.invokeAsync('JoinGroup', ["table" + ResId]);
+          await joinRequiredGroups();
           connectionIsOpen = true;
+
+          await setSignalrClientMethods();
 
 
           connection.onreconnected((connectionId) {
@@ -83,6 +83,37 @@ class SignalRService with ChangeNotifier{
     }catch(e){
       print("signalRService initializeConnection exception" + e!.toString());
     }
+  }
+
+  joinRequiredGroups() async
+  {
+    await connection.invokeAsync('JoinGroup', ["table" + ResId]);
+  }
+
+  joinOrder(String tableId, String orderId) async
+  {
+    print("signalRService joined order" + tableId.toString());
+    await connection.invokeAsync('JoinGroup', ["order" + ResId + tableId + orderId]);
+  }
+
+  leaveOrder(String tableId, String orderId) async
+  {
+    print("signalRService leaving order" + tableId.toString());
+    await connection.invokeAsync('LeaveGroup', ["order" + ResId + tableId + orderId]);
+  }
+
+  setSignalrClientMethods() async{
+    connection.on('SendTableDetails', (args) {
+      print("signalRService on Table details Received" + args.toString());
+      List<TableMaster> tableById = List<TableMaster>.from(args.map((model)=> TableMaster.fromJson(model)));
+      print(tableById.length);
+      Provider.of<TablesProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).updateFromSignalR(tableById);
+    },);
+
+    connection.on('SendOrdersByOrderId', (args) {
+     // print("signalRService on SendOrdersByOrderId Received" + args.toString());
+      Provider.of<OrdersProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).updateFromSignalR(args);
+    },);
   }
 
 

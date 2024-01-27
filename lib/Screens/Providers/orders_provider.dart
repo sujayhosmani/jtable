@@ -2,6 +2,7 @@
 
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:jtable/Helpers/Constants.dart';
@@ -45,6 +46,7 @@ class OrdersProvider with ChangeNotifier{
       final response = await _helper.get("orders/ordersByBothId/" + orderId + "/" + tableNo + "/true", context);
       print("network Model");
       if(response != null){
+        log("from network $response");
         _orders = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
         fillOtherOrders(List<Orders>.from(response.map((model)=> Orders.fromJson(model))), List<Orders>.from(response.map((model)=> Orders.fromJson(model))));
         print("notifyinggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg");
@@ -57,6 +59,24 @@ class OrdersProvider with ChangeNotifier{
       return null;
     }
 
+  }
+
+  updateFromSignalR(response){
+    print("the length first");
+    response =  response.substring(1, response.length - 1); // Hello
+    response = json.decode(json.encode(response));
+    log("the log $response");
+    try{
+      _orders = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));
+    }catch(e){
+      print(e);
+    }
+
+    print("the length second");
+    print(_orders?.length);
+    fillOtherOrders(List<Orders>.from(response.map((model)=> Orders.fromJson(model))), List<Orders>.from(response.map((model)=> Orders.fromJson(model))));
+    print("the length third");
+    notifyListeners();
   }
 
   List<Orders>? getMergedList(List<Orders>? allOrders){
@@ -77,11 +97,6 @@ class OrdersProvider with ChangeNotifier{
       }
     }
     return theOrders;
-  }
-
-
-  confirmCart(){
-
   }
 
 

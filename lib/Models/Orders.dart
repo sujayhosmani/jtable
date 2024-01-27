@@ -40,10 +40,15 @@ class Orders {
       this.insertedById,
       this.insertedByName,
       this.insertedByPh,
-    // this.isAccepted,
-    // this.isRunning,
-    // this.isCancelled,
-      this.loggedInStatus});
+
+       this.isAccepted,
+       this.isRunning,
+       this.isCancelled,
+       this.resUniq,
+       this.loggedInStatus,
+       this.groupId,
+       this.restaurentId
+  });
 
   Orders.fromJson(dynamic json) {
     itemId = json['itemId'];
@@ -90,9 +95,12 @@ class Orders {
 
     loggedInStatus = json['loggedInStatus'];
 
-    // isAccepted = json['isAccepted'];
-    // isRunning = json['isRunning'];
-    // isCancelled = json['isCancelled'];
+    isAccepted = json['isAccepted'];
+    isRunning = json['isRunning'];
+    isCancelled = json['isCancelled'];
+    restaurentId = json['restaurentId'];
+    groupId = json['groupId'];
+    resUniq = json['resUniq'];
 
   }
   String? itemId;
@@ -138,10 +146,12 @@ class Orders {
   String? insertedById;
   String? insertedByName;
   String? insertedByPh;
-
-  // bool? isAccepted;
-  // bool? isRunning;
-  // bool? isCancelled;
+  int? groupId;
+  int? restaurentId;
+  String? resUniq;
+  bool? isAccepted;
+  bool? isRunning = false;
+  bool? isCancelled;
 
 
 
@@ -191,9 +201,13 @@ class Orders {
 
     map['loggedInStatus'] = loggedInStatus;
 
-    // map['isRunning'] = isRunning;
-    // map['isAccepted'] = isAccepted;
-    // map['isCancelled'] = isCancelled;
+    map['isRunning'] = isRunning;
+    map['isAccepted'] = isAccepted;
+    map['isCancelled'] = isCancelled;
+
+    map['groupId'] = groupId;
+    map['resUniq'] = resUniq;
+    map['restaurentId'] = restaurentId;
     return map;
   }
 

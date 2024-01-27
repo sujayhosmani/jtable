@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/auth_service.dart';
+import 'package:jtable/Helpers/navigation_service.dart';
 import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Screens/HomeScreen/Components/home_screen.dart';
@@ -48,6 +49,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => FooterProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: NavigationService.navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: ThemeData(

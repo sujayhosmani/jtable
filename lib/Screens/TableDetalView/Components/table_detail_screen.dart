@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/Utils.dart';
+import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/LoggedInUserPost.dart';
 import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Orders.dart';
@@ -38,15 +40,42 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   TextEditingController mUserName = TextEditingController();
   TextEditingController mPhoneNumber = TextEditingController();
   TextEditingController mNoOfPeople = TextEditingController();
+
+  @override
   void initState() {
     super.initState();
     finalTable = widget.tableMaster;
+    _tabController = new TabController(vsync: this, length: 4);
     Future.delayed(Duration.zero,(){
       Provider.of<MenuProvider>(context, listen: false).onInitFirst(finalTable.tableNo ?? "");
     });
 
     callTheMethod();
-    _tabController = new TabController(vsync: this, length: 4);
+
+    joinTheGroup();
+  }
+
+  SignalRService? numberGenerator;
+  @override
+  void didChangeDependencies() {
+    numberGenerator = Provider.of<SignalRService>(context, listen: false);
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    leaveTheGroup();
+    super.dispose();
+
+
+  }
+
+  joinTheGroup(){
+    Provider.of<SignalRService>(context,listen: false).joinOrder(finalTable.id ?? "", finalTable.occupiedById ?? "");
+  }
+
+  leaveTheGroup(){
+    numberGenerator?.leaveOrder(finalTable.id ?? "", finalTable.occupiedById ?? "");
   }
 
   callTheMethod() async {
@@ -87,8 +116,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
         ),
       body: Stack(
         children: [
-          // (finalTable.isOccupied ?? false)
-          //     ?
+          (finalTable.isOccupied ?? false)
+              ?
           Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
             print("consuminhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
             print(orders.pending_orders?.length ?? 0);
@@ -104,8 +133,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
                 })
               ],
             );
-          }),
-              // : fillUserDetails(),
+          })
+              : fillUserDetails(),
           Consumer<GlobalProvider>(builder: (context, global, child) {
             print(global.error);
             return LoadingScreen(
@@ -641,8 +670,12 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
       data.insertedByName = loggedInUser?.name;
       data.insertedByPh = loggedInUser?.phone;
       data.status = "pending";
+      data.isRunning = false;
+      data.isAccepted = false;
+      data.isCancelled = false;
     });
-    print(json.encode(finalTable));
+    print(finalTable);
+    log(json.encode(cartItems));
     print("--------------------------------------------------------------------------------------------------");
     print(finalTable.occupiedById);
     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, finalTable.occupiedById ?? "", finalTable.tableNo ?? "");
@@ -855,14 +888,15 @@ class _itemList extends StatelessWidget {
   }
 
   onAcceptPending(Orders order, BuildContext context, String from) {
-
+    print(from);
     if(from == "pending"){
       order.status = "in_progress";
     }else if(from == "in_progress"){
       order.status = "completed";
-    };
+    }
     List<Orders> orders = [];
     orders.add(order);
+    log(json.encode(orders));
     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
   }
 
