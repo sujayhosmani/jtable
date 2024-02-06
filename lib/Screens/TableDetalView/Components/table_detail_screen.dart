@@ -56,9 +56,11 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   SignalRService? numberGenerator;
+  OrdersProvider? ordersProvider;
   @override
   void didChangeDependencies() {
     numberGenerator = Provider.of<SignalRService>(context, listen: false);
+    ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
     super.didChangeDependencies();
   }
 
@@ -75,6 +77,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   leaveTheGroup(){
+    ordersProvider?.clearOrders();
     numberGenerator?.leaveOrder(finalTable.id ?? "", finalTable.occupiedById ?? "");
   }
 

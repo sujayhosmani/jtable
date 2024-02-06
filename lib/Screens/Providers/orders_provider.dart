@@ -39,6 +39,17 @@ class OrdersProvider with ChangeNotifier{
   List<Orders>? _merged_orders;
   List<Orders>? get merged_orders => _merged_orders;
 
+
+  clearOrders(){
+    _orders = [];
+    _pending_orders = [];
+    _inprogress_orders = [];
+    _completedOrders = [];
+    _delivered_orders = [];
+    _merged_orders =[];
+
+  }
+
   final ApiBaseHelper _helper = ApiBaseHelper();
 
   Future<List<Orders>?> GetOrdersByOrderId(BuildContext context, String orderId, String tableNo) async {
@@ -63,8 +74,8 @@ class OrdersProvider with ChangeNotifier{
 
   updateFromSignalR(response){
     print("the length first");
-    response =  response.substring(1, response.length - 1); // Hello
-    response = json.decode(json.encode(response));
+    // response =  response.substring(1, response.length - 1); // Hello
+     response = response[0];
     log("the log $response");
     try{
       _orders = List<Orders>.from(response.map((model)=> Orders.fromJson(model)));

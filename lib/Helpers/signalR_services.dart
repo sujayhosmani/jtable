@@ -42,7 +42,7 @@ class SignalRService with ChangeNotifier{
 
         if (connection.state != HubConnectionState.connected) {
 
-
+          await setSignalrClientMethods();
 
 
 
@@ -51,7 +51,7 @@ class SignalRService with ChangeNotifier{
           await joinRequiredGroups();
           connectionIsOpen = true;
 
-          await setSignalrClientMethods();
+
 
 
           connection.onreconnected((connectionId) {
@@ -111,7 +111,7 @@ class SignalRService with ChangeNotifier{
     },);
 
     connection.on('SendOrdersByOrderId', (args) {
-     // print("signalRService on SendOrdersByOrderId Received" + args.toString());
+      print("signalRService on SendOrdersByOrderId Received" + args.toString());
       Provider.of<OrdersProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).updateFromSignalR(args);
     },);
   }
