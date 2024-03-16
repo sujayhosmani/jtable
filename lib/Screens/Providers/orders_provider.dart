@@ -14,7 +14,9 @@ import 'package:jtable/Models/Users.dart';
 import 'package:jtable/Network/ApiBaseHelper.dart';
 import 'package:jtable/Network/ApiResponse.dart';
 import 'package:jtable/Network/network_repo.dart';
+import 'package:jtable/Screens/Providers/menu_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
+import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -52,7 +54,7 @@ class OrdersProvider with ChangeNotifier{
 
   final ApiBaseHelper _helper = ApiBaseHelper();
 
-  Future<List<Orders>?> GetOrdersByOrderId(BuildContext context, String orderId, String tableNo) async {
+  Future<List<Orders>?> GetOrdersByOrderId(BuildContext context, String orderId, String tableNo, {bool shouldNavigate = false}) async {
     try{
       final response = await _helper.get("orders/ordersByBothId/" + orderId + "/" + tableNo + "/true", context);
       print("network Model");
@@ -62,6 +64,15 @@ class OrdersProvider with ChangeNotifier{
         fillOtherOrders(List<Orders>.from(response.map((model)=> Orders.fromJson(model))), List<Orders>.from(response.map((model)=> Orders.fromJson(model))));
         print("notifyinggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg");
         print(_orders?.length);
+        if(shouldNavigate){
+          if((_pending_orders?.length ?? 0) > 0){
+            Provider.of<SliderProvider>(context, listen: false).onValueChanged(3, isNotify: false);
+          }else{
+            Provider.of<SliderProvider>(context, listen: false).onValueChanged(2, isNotify: false);
+          }
+        }
+
+
         notifyListeners();
         return _orders;
       }
@@ -119,8 +130,10 @@ class OrdersProvider with ChangeNotifier{
         // _orders = order;
         // fillOtherOrders(order, order);
         // notifyListeners();
+        Provider.of<MenuProvider>(context, listen: false).resetItems();
         await GetOrdersByOrderId(context, orderId, tableNo);
       }
+
 
     }catch(e){
       return null;

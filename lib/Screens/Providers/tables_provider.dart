@@ -94,7 +94,7 @@ class TablesProvider with ChangeNotifier{
         Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
             context,
             val?.occupiedById ?? "",
-            val?.tableNo ?? "");
+            val?.tableNo ?? "", shouldNavigate: true);
       }
       if(val != null){
         return val;

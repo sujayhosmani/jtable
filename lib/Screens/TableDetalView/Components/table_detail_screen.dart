@@ -57,10 +57,14 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
 
   SignalRService? numberGenerator;
   OrdersProvider? ordersProvider;
+  FooterProvider? footerProvider;
+  SliderProvider? slideProvider;
   @override
   void didChangeDependencies() {
     numberGenerator = Provider.of<SignalRService>(context, listen: false);
     ordersProvider = Provider.of<OrdersProvider>(context, listen: false);
+    footerProvider = Provider.of<FooterProvider>(context, listen: false);
+    slideProvider = Provider.of<SliderProvider>(context, listen: false);
     super.didChangeDependencies();
   }
 
@@ -79,9 +83,12 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   leaveTheGroup(){
     ordersProvider?.clearOrders();
     numberGenerator?.leaveOrder(finalTable.id ?? "", finalTable.occupiedById ?? "");
+    footerProvider?.onValueChanged(0, isNotify: false);
+    slideProvider?.onValueChanged(0, isNotify: false);
   }
 
   callTheMethod() async {
+    Provider.of<LoggedInProvider>(context, listen: false).clearLoggedInUsers();
     TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onTableDetailViewPage(context, finalTable.tableNo ?? "");
     if(mas != null){
       setState(() {
@@ -278,14 +285,17 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> onConfirmCart(), child: Text("Confirm", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+            child: Consumer<MenuProvider>(builder: (context, menu, child){
+              return (menu.cartItems.length ?? 0) <= 0 ? buildGoBackFooter() :
+              ElevatedButton(onPressed: ()=> onConfirmCart(), child: Text("Confirm", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
                 backgroundColor: Colors.green,
                 // padding: EdgeInsets.zero,
                 // tapTargetSize: MaterialTapTargetSize.shrinkWrap
-            )),
+              ));
+            })
           ),
         ),
 
@@ -295,8 +305,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
 
   buildOrderFooter(secVal, OrdersProvider ordersProvider) {
      switch(secVal){
-       case 0: return buildForPending(ordersProvider.pending_orders, ordersProvider.inprogress_orders);
-       case 1: return buildForProgress(ordersProvider.inprogress_orders);
+       case 0: return ((ordersProvider.pending_orders?.length ?? 0) > 0) ? buildForPending(ordersProvider.pending_orders, ordersProvider.inprogress_orders) : buildGoBackFooter();
+       case 1: return ((ordersProvider.inprogress_orders?.length ?? 0) > 0) ? buildForProgress(ordersProvider.inprogress_orders) : buildGoBackFooter();
        case 2: return buildGoBackFooter();
        default: return buildGoBackFooter();
      }
@@ -383,6 +393,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             controller: _tabController,
             // labelPadding: EdgeInsets.only(top: 2, bottom: 2, left: 10, right: 10),
             indicatorColor: Colors.black87,
+
             onTap: (index){
               Provider.of<FooterProvider>(context, listen: false).onValueChanged(index);
             },
@@ -393,6 +404,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
                   alignment: Alignment.topRight,
                   label: Text((orders.pending_orders?.length.toString()) ?? ""),
                   child: const Text("Pending"),
+
                 ),
               ),
 
@@ -450,7 +462,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
                   ]),
             ),
           ),
-          buildOtherViews(slide.selectedVal)
+          buildOtherViews(slide.selectedVal, orders)
         ],
       )
     );
@@ -640,10 +652,10 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
 
-  buildOtherViews(selectedVal) {
+  buildOtherViews(selectedVal, OrdersProvider orders) {
 
     switch(selectedVal){
-      case 1: return const TableDetailViewScreen();
+      case 1: return TableDetailViewScreen(tableMaster: finalTable, orderDetails: (orders.orders?.length ?? 0) > 0 ? orders.orders?.first : null);
       case 2: {
         return Consumer<MenuProvider>(builder: (context, menu, child){
             return (menu.cartItems.length ?? 0) <= 0 ? emptyCartView() :
@@ -660,7 +672,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     }
   }
 
-  onConfirmCart() {
+  onConfirmCart() async {
     Users? loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
     List<Orders> cartItems = Provider.of<MenuProvider>(context, listen: false).cartItems;
     cartItems.forEach((data) {
@@ -681,7 +693,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     log(json.encode(cartItems));
     print("--------------------------------------------------------------------------------------------------");
     print(finalTable.occupiedById);
-    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, finalTable.occupiedById ?? "", finalTable.tableNo ?? "");
+     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, finalTable.occupiedById ?? "", finalTable.tableNo ?? "");
 
   }
 

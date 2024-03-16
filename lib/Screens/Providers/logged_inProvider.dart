@@ -25,7 +25,37 @@ class LoggedInProvider with ChangeNotifier{
 
   List<LoggedInUsers>? get loggedInUser => _loggedInUser;
 
+  List<LoggedInUsers>? _loggedInUserForTable;
+
+  List<LoggedInUsers>? get loggedInUserForTable => _loggedInUserForTable;
+
+  List<LoggedInUsers>? _notificationLoggedInUserForTable;
+
+  List<LoggedInUsers>? get notificationLoggedInUserForTable => _notificationLoggedInUserForTable;
+
   final ApiBaseHelper _helper = ApiBaseHelper();
+
+  Future<List<LoggedInUsers>?> GetLoggedInUserTableId(String id, BuildContext context) async {
+    try{
+      final response = await _helper.get("login/loggedInUserTableId/" + id, context);
+      if(response != null){
+        print("logged in user11");
+        _loggedInUserForTable = List<LoggedInUsers>.from(response.map((model)=> LoggedInUsers.fromJson(model)));
+        print("logged in user");
+        notifyListeners();
+        return _loggedInUserForTable;
+      }
+
+    }catch(e){
+      return null;
+    }
+
+  }
+
+  clearLoggedInUsers(){
+    _loggedInUserForTable = [];
+    _notificationLoggedInUserForTable = [];
+  }
 
   Future<List<LoggedInUsers>?> GetAllNotifications(BuildContext context) async {
     try{

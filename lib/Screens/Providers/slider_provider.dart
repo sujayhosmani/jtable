@@ -30,9 +30,12 @@ class SliderProvider with ChangeNotifier{
   int get selectedSecVal => _selectedSecVal;
 
 
-  onValueChanged(int v){
+  onValueChanged(int v, {bool isNotify = true}){
     _selectedVal = v;
-    notifyListeners();
+    if(isNotify){
+      notifyListeners();
+    }
+
   }
 
   onValueChangedForSec(int v){
@@ -52,9 +55,12 @@ class FooterProvider with ChangeNotifier{
   int get selectedFooter => _selectedFooter;
 
 
-  onValueChanged(int v){
+  onValueChanged(int v, {bool isNotify = true}){
     _selectedFooter = v;
-    notifyListeners();
+    if(isNotify){
+      notifyListeners();
+    }
+
   }
 
 

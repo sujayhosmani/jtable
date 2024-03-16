@@ -1,9 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:jtable/Models/Logged_in_users.dart';
+import 'package:jtable/Models/Orders.dart';
+import 'package:jtable/Models/Table_master.dart';
+import 'package:jtable/Screens/Providers/logged_inProvider.dart';
+import 'package:jtable/Screens/Providers/menu_provider.dart';
+import 'package:provider/provider.dart';
 
 class TableDetailViewScreen extends StatefulWidget
 {
-  const TableDetailViewScreen({super.key});
+  final TableMaster tableMaster;
+  final Orders? orderDetails;
+  const TableDetailViewScreen({super.key, required this.tableMaster, this.orderDetails});
 
   @override
   State<TableDetailViewScreen> createState() => _TableDetailViewScreenState();
@@ -11,6 +19,22 @@ class TableDetailViewScreen extends StatefulWidget
 
 class _TableDetailViewScreenState extends State<TableDetailViewScreen>
 {
+  late TableMaster finalTable;
+  late Orders? orderDetails;
+
+  @override
+  void initState() {
+    super.initState();
+    finalTable = widget.tableMaster;
+    orderDetails = widget.orderDetails;
+
+    if((Provider.of<LoggedInProvider>(context, listen: false).loggedInUserForTable?.length ?? 0) == 0){
+      getLoggedInUsers();
+    }
+
+
+  }
+
   @override
   Widget build(BuildContext context)
   {
@@ -50,10 +74,10 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                                     width: 1
                                 )
                             ),
-                            child: Text("OTP : 123456",
+                            alignment: Alignment.centerLeft,
+                            child: Text("OTP : " + (finalTable.joinOTP ?? ""),
                               style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.bold),),
-                            alignment: Alignment.centerLeft),
+                                  fontSize: 13, fontWeight: FontWeight.bold),)),
                       ],
                     ),
 
@@ -94,12 +118,12 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          child: Text("TRRR ",
+                          child: Text(finalTable.occupiedName ?? "",
                             style: TextStyle(
                               fontSize: 13, fontWeight: FontWeight.bold,color: Colors.black54,),),
                         ),
                         Container(
-                          child: Text("Vikas",
+                          child: Text(finalTable.assignedStaffName ?? "",
                             style: TextStyle(
                               fontSize: 13, fontWeight: FontWeight.bold,color: Colors.black54, ),),
                         ),
@@ -117,12 +141,12 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          child: Text("1234567",
+                          child: Text(finalTable.occupiedPh ?? "",
                             style: TextStyle(
                               fontSize: 13, fontWeight: FontWeight.bold,color: Colors.black54,),),
                         ),
                         Container(
-                          child: Text("8675345232",
+                          child: Text(finalTable.assignedStaffPh ?? "",
                             style: TextStyle(
                               fontSize: 13, fontWeight: FontWeight.bold,color: Colors.black54, ),),
                         ),
@@ -159,7 +183,7 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                             flex: 1),
                         Expanded(
                           child: Container(
-                              child: Text("12321",
+                              child: Text("" + (finalTable.noOfPeople ?? 0).toString(),
                                 style: TextStyle(
                                     fontSize: 13, fontWeight: FontWeight.bold),),
                               alignment: Alignment.centerLeft),
@@ -202,7 +226,7 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                             flex: 1),
                         Expanded(
                           child: Container(
-                              child: Text("534",
+                              child: Text("" + (finalTable.totalBill ?? 0).toString(),
                                 style: TextStyle(
                                     fontSize: 13, fontWeight: FontWeight.bold),),
                               alignment: Alignment.centerLeft),
@@ -218,7 +242,7 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                             flex: 2),
                         Expanded(
                           child: Container(
-                              child: Text("No",
+                              child: Text((finalTable.isPrinted ?? 0) > 0 ? "Yes" : "No",
                                 style: TextStyle(
                                     fontSize: 13, fontWeight: FontWeight.bold),),
                               alignment: Alignment.centerRight),
@@ -245,27 +269,13 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                             flex: 1),
                         Expanded(
                           child: Container(
-                              child: Text("107 hr 13 min",
+                              child: Text(finalTable.duration ?? "",
                                 style: TextStyle(
                                     fontSize: 13, fontWeight: FontWeight.bold),),
                               alignment: Alignment.centerLeft),
                           flex: 2, ),
 
-                        Expanded(
-                            child: Container(
-                              alignment: Alignment.centerRight,
-                              child: Text("Is Running :",
-                                style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.bold,color: Colors.grey,),),
-                            ),
-                            flex: 1),
-                        Expanded(
-                          child: Container(
-                              child: Text("True",
-                                style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.bold,color: Colors.grey,),),
-                              alignment: Alignment.centerRight),
-                          flex: 1, ),
+
 
 
 
@@ -296,7 +306,7 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                                 flex: 1, ),
                               Expanded(
                                 child: Container(
-                                    child: Text("1234567890",
+                                    child: Text(orderDetails?.ordersId ?? "",
                                       style: TextStyle(
                                           fontSize: 13, fontWeight: FontWeight.bold),),
                                     alignment: Alignment.centerLeft),
@@ -315,7 +325,7 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                                 flex: 1,),
                               Expanded(
                                 child: Container(
-                                    child: Text("4244",
+                                    child: Text(orderDetails?.orderIdInt ?? "",
                                       style: TextStyle(
                                           fontSize: 13, fontWeight: FontWeight.bold),),
                                     alignment: Alignment.centerLeft),
@@ -334,7 +344,7 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                                 flex: 2,),
                               Expanded(
                                 child: Container(
-                                    child: Text("4244",
+                                    child: Text((orderDetails?.orderNo ?? 0).toString() ?? "",
                                       style: TextStyle(
                                           fontSize: 13, fontWeight: FontWeight.bold),),
                                     alignment: Alignment.centerLeft),
@@ -384,94 +394,68 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
                   ],
                 ),
               ),
-              ListView.builder(
-                scrollDirection: Axis.vertical,
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: 5,
-                itemBuilder: (context, int index) {
-                  return Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.all(5),
-                    padding: EdgeInsets.all(5),
+        Consumer<LoggedInProvider>(builder: (context, loginProvider, child){
+          return ListView.builder(
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: loginProvider.loggedInUserForTable?.length ?? 0,
+            itemBuilder: (context, int index) {
+              LoggedInUsers? user = loginProvider.loggedInUserForTable?[index];
+              return Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(5),
 
-                    //margin: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                            width: 1
-                        ),
-                        color: Colors.greenAccent.shade100,
-                        borderRadius: BorderRadius.circular(5)
-                    ),
+                //margin: EdgeInsets.symmetric(horizontal: 5,vertical: 2),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                      width: 0.1
+                  ),
+                  color: (user?.isFirst ?? false) ? Colors.greenAccent.shade100 : Colors.transparent,
+                ),
 
-                    child: Column(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  child: Text("1.",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
-                                ),
-                                SizedBox(width: 12,),
-                                Column(
-                                  children: [
-                                    Text("TRR True",),
-                                    Text("123456fsdf7"),
-                                  ],
-                                )
-
-
-
-                              ],
+                            Container(
+                              child: Text("1.",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
                             ),
-
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                            SizedBox(width: 12,),
+                            Column(
                               children: [
-                                MaterialButton(
-                                  onPressed: () {
-
-                                  },
-                                  color: Colors.purple,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5)
-                                  ),
-                                  minWidth:30,
-                                  child: Text("User" ,style: TextStyle(fontSize:16,fontWeight: FontWeight.bold,color: Colors.white),),
-                                ),
-                                SizedBox(width: 3,),
-                                MaterialButton(
-                                  minWidth:30,
-                                  onPressed: () {
-
-                                  },
-                                  color: Colors.green,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5)
-                                  ),
-                                  child: Text("Joined" ,style: TextStyle(fontSize:16,fontWeight: FontWeight.bold,color: Colors.white),),
-                                ),
-
-
-
+                                Text(user?.name ?? "",),
                               ],
-                            ),
+                            )
+
+
+
                           ],
                         ),
 
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+
+                            Text(user?.phone ?? "")
+
+
+                          ],
+                        ),
                       ],
                     ),
-                  );
-                },
 
-              ),
-              Divider(
-                color: Colors.grey,
-                height: 3,
-              ),
+                  ],
+                ),
+              );
+            },
+
+          );
+        }),
 
 
 
@@ -481,5 +465,9 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
       ),
 
     );
+  }
+
+  void getLoggedInUsers() {
+    Provider.of<LoggedInProvider>(context, listen: false).GetLoggedInUserTableId(finalTable.id ?? "", context);
   }
 }
