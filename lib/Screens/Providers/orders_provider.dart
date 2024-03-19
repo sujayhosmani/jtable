@@ -41,6 +41,9 @@ class OrdersProvider with ChangeNotifier{
   List<Orders>? _merged_orders;
   List<Orders>? get merged_orders => _merged_orders;
 
+  TableMaster? _currentTable;
+  TableMaster? get currentTable => _currentTable; //TODO yet to implement instead of finalTable
+
 
   clearOrders(){
     _orders = [];
@@ -50,6 +53,24 @@ class OrdersProvider with ChangeNotifier{
     _delivered_orders = [];
     _merged_orders =[];
 
+  }
+
+  updateCurrentTable(TableMaster? table){
+    if(_currentTable != null && _currentTable?.id != null){
+      if(_currentTable?.id == table?.id){
+        _currentTable = table;
+        notifyListeners();
+      }
+
+    }
+  }
+
+  AddCurrentTable(TableMaster table){
+    _currentTable = table;
+  }
+
+  ClearCurrentTable(){
+    _currentTable = null;
   }
 
   final ApiBaseHelper _helper = ApiBaseHelper();

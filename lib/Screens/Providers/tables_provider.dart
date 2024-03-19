@@ -52,6 +52,8 @@ class TablesProvider with ChangeNotifier{
 
   List<TableMaster> get assignedTableMaster => _assignedTableMaster;
 
+
+
   final ApiBaseHelper _helper = ApiBaseHelper();
 
   Future<List<TableMaster>?> GetAllTables(BuildContext context, bool isFromRefresh) async {
@@ -90,6 +92,7 @@ class TablesProvider with ChangeNotifier{
 
     if(index != null){
       TableMaster? val = master?[index];
+
       if(master?[index].isOccupied ?? false){
         Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
             context,
@@ -97,6 +100,7 @@ class TablesProvider with ChangeNotifier{
             val?.tableNo ?? "", shouldNavigate: true);
       }
       if(val != null){
+        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(val);
         return val;
       }
 
@@ -105,12 +109,14 @@ class TablesProvider with ChangeNotifier{
 
   }
 
-  Future<TableMaster?> onUserSubmit(BuildContext context, String tableNo) async {
+  Future<TableMaster?> onUserSubmitViewPage(BuildContext context, String tableNo) async {
     int? index = _tableMaster?.indexWhere((element) => element.tableNo == tableNo);
     List<TableMaster>? master = await GetTableByTableId(context, tableNo);
     if(index != null){
       TableMaster? val = master?[index];
+
       if(val != null){
+        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(val);
         return val;
       }
 
@@ -140,7 +146,7 @@ class TablesProvider with ChangeNotifier{
 
   }
 
-  updateFromSignalR(List<TableMaster> tables){
+  updateFromSignalR(List<TableMaster> tables, BuildContext context){
     try{
       print("updateFromSignalR 1");
       TableMaster table = tables.first;
@@ -154,6 +160,7 @@ class TablesProvider with ChangeNotifier{
       print("updateFromSignalR 5");
       _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
       print(_tableMaster.length);
+      Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(table);
       loadCategories();
       notifyListeners();
     }catch(e){

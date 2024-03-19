@@ -31,6 +31,7 @@ class LoggedInUsers {
     this.isBilled,
     this.ratingFromStaff,
     this.resUniq,
+    this.joinOTP,
       this.updatedBy,});
 
   LoggedInUsers.fromJson(dynamic json) {
@@ -64,7 +65,7 @@ class LoggedInUsers {
     finalStatusCode = json['finalStatusCode'];
     isBilled = json['isBilled'];
     ratingFromStaff = json['ratingFromStaff'];
-
+    joinOTP = json['joinOTP'];
     resUniq = json['resUniq'];
   }
   String? name;
@@ -76,6 +77,7 @@ class LoggedInUsers {
   String? dateOf;
   String? monthOf;
   String? otp;
+  String? joinOTP;
   String? otpById;
   String? otpByName;
   String? otpByPh;
@@ -131,6 +133,7 @@ class LoggedInUsers {
      map['isBilled'] = isBilled;
      map['ratingFromStaff'] = ratingFromStaff;
     map['resUniq'] = resUniq;
+    map['joinOTP'] = joinOTP;
 
     return map;
   }

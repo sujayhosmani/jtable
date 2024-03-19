@@ -107,7 +107,7 @@ class SignalRService with ChangeNotifier{
       print("signalRService on Table details Received" + args.toString());
       List<TableMaster> tableById = List<TableMaster>.from(args.map((model)=> TableMaster.fromJson(model)));
       print(tableById.length);
-      Provider.of<TablesProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).updateFromSignalR(tableById);
+      Provider.of<TablesProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).updateFromSignalR(tableById, NavigationService.navigatorKey.currentContext as BuildContext);
     },);
 
     connection.on('SendOrdersByOrderId', (args) {

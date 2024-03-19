@@ -54,9 +54,21 @@ class FooterProvider with ChangeNotifier{
 
   int get selectedFooter => _selectedFooter;
 
+  int _selectedFooterOTP = 0;
+
+  int get selectedFooterOTP => _selectedFooterOTP;
+
 
   onValueChanged(int v, {bool isNotify = true}){
     _selectedFooter = v;
+    if(isNotify){
+      notifyListeners();
+    }
+
+  }
+
+  onValueChangedOnOTP(int v, {bool isNotify = true}){
+    _selectedFooterOTP = v;
     if(isNotify){
       notifyListeners();
     }

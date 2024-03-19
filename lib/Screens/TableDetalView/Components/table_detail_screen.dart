@@ -34,25 +34,34 @@ class TableDetailScreen extends StatefulWidget {
   State<TableDetailScreen> createState() => _TableDetailScreenState();
 }
 
-class _TableDetailScreenState extends State<TableDetailScreen> with SingleTickerProviderStateMixin {
-  late TableMaster finalTable;
+class _TableDetailScreenState extends State<TableDetailScreen> with TickerProviderStateMixin  {
+  late TableMaster finalTable2;
   late TabController _tabController;
+  late TabController _tabController2;
   TextEditingController mUserName = TextEditingController();
   TextEditingController mPhoneNumber = TextEditingController();
   TextEditingController mNoOfPeople = TextEditingController();
+  bool isOrderJoined = false;
 
   @override
   void initState() {
     super.initState();
-    finalTable = widget.tableMaster;
+    finalTable2 = widget.tableMaster;
+    Provider.of<OrdersProvider>(context, listen: false).AddCurrentTable(widget.tableMaster);
     _tabController = new TabController(vsync: this, length: 4);
+    _tabController2 = new TabController(vsync: this, length: 2);
+    onInitialization();
+  }
+
+  onInitialization(){
+    finalTable2 = Provider.of<OrdersProvider>(context, listen: false).currentTable!;
     Future.delayed(Duration.zero,(){
-      Provider.of<MenuProvider>(context, listen: false).onInitFirst(finalTable.tableNo ?? "");
+      Provider.of<MenuProvider>(context, listen: false).onInitFirst(finalTable2.tableNo ?? "");
     });
 
     callTheMethod();
 
-    joinTheGroup();
+
   }
 
   SignalRService? numberGenerator;
@@ -77,36 +86,55 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   }
 
   joinTheGroup(){
-    Provider.of<SignalRService>(context,listen: false).joinOrder(finalTable.id ?? "", finalTable.occupiedById ?? "");
+    finalTable2 = Provider.of<OrdersProvider>(context, listen: false).currentTable!;
+    Provider.of<SignalRService>(context,listen: false).joinOrder(finalTable2.id ?? "", finalTable2.occupiedById ?? "");
+    isOrderJoined = true;
   }
 
   leaveTheGroup(){
     ordersProvider?.clearOrders();
-    numberGenerator?.leaveOrder(finalTable.id ?? "", finalTable.occupiedById ?? "");
+    numberGenerator?.leaveOrder(finalTable2.id ?? "", finalTable2.occupiedById ?? "");
     footerProvider?.onValueChanged(0, isNotify: false);
     slideProvider?.onValueChanged(0, isNotify: false);
   }
 
   callTheMethod() async {
-    Provider.of<LoggedInProvider>(context, listen: false).clearLoggedInUsers();
-    TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onTableDetailViewPage(context, finalTable.tableNo ?? "");
-    if(mas != null){
-      setState(() {
-        finalTable = mas;
-      });
-
+    finalTable2 = Provider.of<OrdersProvider>(context, listen: false).currentTable!;
+    if(!(finalTable2.isOccupied ?? false)){
+      getLoggedInUsersOTP(context, finalTable2.id ?? "");
+    }else{
+      joinTheGroup();
     }
+    Provider.of<LoggedInProvider>(context, listen: false).clearLoggedInUsers();
+    TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onTableDetailViewPage(context, finalTable2.tableNo ?? "");
+    if(!isOrderJoined){
+      joinTheGroup();
+    }
+    // if(mas != null){
+    //   setState(() {
+    //     print("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq;");
+    //     print(json.encode(mas));
+    //     finalTable2 = mas;
+    //   });
+    //
+    // }
 
   }
 
   callTheMethodOnlyTable() async {
-    TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onUserSubmit(context, finalTable.tableNo ?? "");
-    if(mas != null){
-      setState(() {
-        finalTable = mas;
-      });
-
+    TableMaster? mas  = await Provider.of<TablesProvider>(context, listen: false).onUserSubmitViewPage(context, finalTable2.tableNo ?? "");
+    if(!isOrderJoined){
+      joinTheGroup();
     }
+    // if(mas != null){
+    //   setState(() {
+    //     finalTable2 = mas;
+    //     print("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq;");
+    //     print(json.encode(finalTable2));
+    //
+    //   });
+    //
+    // }
 
   }
 
@@ -115,23 +143,30 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     return Scaffold(
         appBar: AppBar(
           title: Text(
-            finalTable.tableNo ?? "",
+            finalTable2.tableNo ?? "",
             style: TextStyle(fontWeight: FontWeight.w900, fontSize: 30),
           ),
           actions: [
+            Consumer<OrdersProvider>(builder: (context, orders, child) {
+              return orders.currentTable?.isOccupied ?? false ? TextButton(onPressed: () {}, child: Text("otp: ${orders.currentTable?.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)): Container();
+            }),
+            Consumer<OrdersProvider>(builder: (context, orders, child) {
+              return orders.currentTable?.isOccupied ?? false ? addItemAction() : Container();
+            }),
 
-            TextButton(onPressed: () {}, child: Text("otp: ${finalTable.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)),
-            finalTable.isOccupied ?? false ? addItemAction() : Container(),
           ],
         ),
       body: Stack(
         children: [
-          (finalTable.isOccupied ?? false)
-              ?
+
           Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
             print("consuminhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+            print(orders.currentTable?.totalBill);
             print(orders.pending_orders?.length ?? 0);
-            return Column(
+            if(!isOrderJoined && (orders.currentTable?.isOccupied ?? false) == true){
+              joinTheGroup();
+            }
+            return (orders.currentTable?.isOccupied ?? false) ? Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 buildPrimaryTopBar(slide.selectedVal),
@@ -142,9 +177,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
                   return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
                 })
               ],
-            );
-          })
-              : fillUserDetails(),
+            ) : fillUserDetails(orders);
+          }),
           Consumer<GlobalProvider>(builder: (context, global, child) {
             print(global.error);
             return LoadingScreen(
@@ -234,7 +268,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   getFooterBarBasedOnSelectedVal(selectedVal, secVal, OrdersProvider ordersProvider) {
     switch(selectedVal){
       case 1: return buildTableFooter();
-      case 2: return buildCartFooter();
+      case 2: return buildCartFooter(ordersProvider);
       case 3: return buildOrderFooter(secVal, ordersProvider);
       case 4: return buildBillFooter();
       default: return Container();
@@ -277,7 +311,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     );
   }
 
-  buildCartFooter() {
+  buildCartFooter(OrdersProvider orders) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -287,7 +321,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
             width: double.infinity,
             child: Consumer<MenuProvider>(builder: (context, menu, child){
               return (menu.cartItems.length ?? 0) <= 0 ? buildGoBackFooter() :
-              ElevatedButton(onPressed: ()=> onConfirmCart(), child: Text("Confirm", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+              ElevatedButton(onPressed: ()=> onConfirmCart(orders), child: Text("Confirm", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -356,7 +390,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
         child: ElevatedButton(onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (BuildContext context) {
-                return MenuScreen(tableNo: finalTable.tableNo ?? "");
+                return MenuScreen(tableNo: finalTable2.tableNo ?? "");
               },
               fullscreenDialog: true));
         }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
@@ -640,7 +674,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
           ElevatedButton(onPressed: (){
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (BuildContext context) {
-                  return MenuScreen(tableNo: finalTable.tableNo ?? "");
+                  return MenuScreen(tableNo: finalTable2.tableNo ?? "");
                 },
                 fullscreenDialog: true));
           }, child: Text("Add Items", style: TextStyle(color: Colors.white),),
@@ -655,7 +689,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
   buildOtherViews(selectedVal, OrdersProvider orders) {
 
     switch(selectedVal){
-      case 1: return TableDetailViewScreen(tableMaster: finalTable, orderDetails: (orders.orders?.length ?? 0) > 0 ? orders.orders?.first : null);
+      case 1: return TableDetailViewScreen(tableMaster: orders.currentTable!, orderDetails: (orders.orders?.length ?? 0) > 0 ? orders.orders?.first : null);
       case 2: {
         return Consumer<MenuProvider>(builder: (context, menu, child){
             return (menu.cartItems.length ?? 0) <= 0 ? emptyCartView() :
@@ -672,14 +706,14 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     }
   }
 
-  onConfirmCart() async {
+  onConfirmCart(OrdersProvider orders) async {
     Users? loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
     List<Orders> cartItems = Provider.of<MenuProvider>(context, listen: false).cartItems;
     cartItems.forEach((data) {
-      data.addedById = finalTable.occupiedById;
-      data.tableNo = finalTable.tableNo;
-      data.tableId = finalTable.id;
-      data.ordersId = finalTable.occupiedById;
+      data.addedById = orders.currentTable?.occupiedById;
+      data.tableNo = orders.currentTable?.tableNo;
+      data.tableId = orders.currentTable?.id;
+      data.ordersId = orders.currentTable?.occupiedById;
       data.insertedBy = loggedInUser?.role;
       data.insertedById = loggedInUser?.id;
       data.insertedByName = loggedInUser?.name;
@@ -689,55 +723,245 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
       data.isAccepted = false;
       data.isCancelled = false;
     });
-    print(finalTable);
+    print(orders.currentTable);
     log(json.encode(cartItems));
     print("--------------------------------------------------------------------------------------------------");
-    print(finalTable.occupiedById);
-     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, finalTable.occupiedById ?? "", finalTable.tableNo ?? "");
+    print(orders.currentTable?.occupiedById);
+     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, orders.currentTable?.occupiedById ?? "", orders.currentTable?.tableNo ?? "");
 
   }
 
-  fillUserDetails() {
+  fillUserDetails(OrdersProvider orders) {
+    print("fillUserDetails - fillUserDetails - fillUserDetails - fillUserDetails");
     return Column(
       children: [
-        SizedBox(height: 8,),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(child: Text("Enter the user details", style: TextStyle(fontSize: 18, ),)),
-        ),
-        SizedBox(height: 6,),
-        InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
-        SizedBox(height: 15,),
-        InputText(isPassword: false,title: "Phone number",icon: Icons.phone, mCtrl: mPhoneNumber),
-        SizedBox(height: 15,),
-        InputText(isPassword: false,title: "No of people",icon: Icons.group, mCtrl: mNoOfPeople),
-        SizedBox(height: 15,),
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50),
-              gradient: Utils.btnGradient
-          ),
-          margin: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
-          child: TextButton(
-            style: TextButton.styleFrom(
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(60)
-                )
-            ),
+        TabBar(
+          // isScrollable: true,
+            padding: EdgeInsets.zero,
+            controller: _tabController2,
+            // labelPadding: EdgeInsets.only(top: 2, bottom: 2, left: 10, right: 10),
+            indicatorColor: Colors.black87,
 
-            child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-            onPressed: () { onUserSubmit(); },
-          ),
+            onTap: (index){
+              Provider.of<FooterProvider>(context, listen: false).onValueChangedOnOTP(index);
+            },
+            tabs: [
+              Tab(
+                child: Badge(
+                  offset: const Offset(12, -9),
+                  alignment: Alignment.topRight,
+                  label: Text("1"),
+                  child: const Text("Users OTP"),
+
+                ),
+              ),
+
+              Tab(
+                child: Text("Add User"),
+              )
+            ]),
+        Expanded(
+          child : TabBarView(
+            controller: _tabController2,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              Consumer<LoggedInProvider>(builder: (context, loggedInUser, child){
+                return  (loggedInUser.notificationLoggedInUserForTable?.length ?? 0) > 0
+                    ? ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount:
+                    loggedInUser.notificationLoggedInUserForTable?.length,
+                    itemBuilder: (context, index) {
+                      LoggedInUsers? loggedIn = loggedInUser.notificationLoggedInUserForTable?[index];
+                      Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
+                      return Container(
+                        height: 100,
+                        padding:
+                        EdgeInsets.symmetric(vertical: 6),
+                        child: ClipRRect(
+                            borderRadius:
+                            BorderRadius.circular(20),
+                            child: Container(
+                              color: Utils.scaffold,
+                              child: Stack(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                        const EdgeInsets
+                                            .symmetric(
+                                            horizontal:
+                                            12),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment
+                                              .center,
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment
+                                              .start,
+                                          children: [
+                                            Text(
+                                              loggedInUser
+                                                  .loggedInUser?[
+                                              index]
+                                                  .tableNo ??
+                                                  "",
+                                              style: TextStyle(
+                                                  fontSize:
+                                                  18,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                            loggedIn?.otp !=
+                                                null
+                                                ? Text(loggedIn
+                                                ?.otp ??
+                                                "")
+                                                : Container(),
+                                          ],
+                                        ),
+                                      ),
+                                      VerticalDivider(
+                                        width: 1,
+                                      ),
+                                      Padding(
+                                        padding:
+                                        const EdgeInsets
+                                            .only(
+                                            left: 12,
+                                            top: 10),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment
+                                              .start,
+                                          children: [
+                                            Text(
+                                              loggedIn?.name ??
+                                                  "",
+                                              style: TextStyle(
+                                                  fontSize:
+                                                  18,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                            Text(loggedIn
+                                                ?.phone ??
+                                                ""),
+                                            //Text("5mem", style: TextStyle(fontSize: 9),),
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding:
+                                    const EdgeInsets.only(
+                                        right: 5),
+                                    child: Align(
+                                      alignment: Alignment
+                                          .bottomRight,
+                                      child: Row(
+                                        crossAxisAlignment:
+                                        CrossAxisAlignment
+                                            .end,
+                                        mainAxisAlignment:
+                                        MainAxisAlignment
+                                            .end,
+                                        children: [
+                                          (orders.currentTable?.joinOTP == null || user?.id != orders.currentTable?.assignedStaffId) ? TextButton(
+                                            onPressed: () =>
+                                                onAccepted(loggedIn, orders),
+                                            child: Text(
+                                                "Accept otp"),
+                                          ): Container(),
+                                          (orders.currentTable?.joinOTP != null && user?.id == orders.currentTable?.assignedStaffId) ? TextButton(
+                                            onPressed: () =>
+                                                setState(() {
+                                                  orders.currentTable?.joinOTP = null;
+                                                }),
+                                            child: Text(
+                                                orders.currentTable?.joinOTP ?? "NA"),
+                                          ): Container(),
+
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            )),
+                      );
+                    })
+                    : Text("");
+              }),
+              Container(
+                child: Column(
+                  children: [
+                    SizedBox(height: 8,),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(child: Text("Enter the user details", style: TextStyle(fontSize: 18, ),)),
+                    ),
+                    SizedBox(height: 6,),
+                    InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
+                    SizedBox(height: 15,),
+                    InputText(isPassword: false,title: "Phone number",icon: Icons.phone, mCtrl: mPhoneNumber),
+                    SizedBox(height: 15,),
+                    InputText(isPassword: false,title: "No of people",icon: Icons.group, mCtrl: mNoOfPeople),
+                    SizedBox(height: 15,),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          gradient: Utils.btnGradient
+                      ),
+                      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(60)
+                            )
+                        ),
+
+                        child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                        onPressed: () { onUserSubmit(orders); },
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          )
         ),
+        Consumer2<LoggedInProvider, FooterProvider>(builder: (context, loggedInUser, footer, child){
+          return  (loggedInUser.notificationLoggedInUserForTable?.length ?? 0) > 0 && footer.selectedFooterOTP == 0
+              ? Container(
+            width: double.infinity,
+            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Clear Table", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero
+                ),
+                backgroundColor: Colors.black87,
+                // padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap
+            )),
+          )
+              : Text("");
+        }),
+
+
       ],
     );
   }
 
-  void onUserSubmit() async {
-    TableMaster? tableDetails = await Provider.of<TablesProvider>(context, listen: false).onUserSubmit(context, finalTable.tableNo ?? "");
+  void onUserSubmit(OrdersProvider orders) async {
+    TableMaster? tableDetails = await Provider.of<TablesProvider>(context, listen: false).onUserSubmitViewPage(context, orders.currentTable?.tableNo ?? "");
     if(tableDetails != null){
       if (tableDetails.isOccupied == false){
         Users? loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
@@ -770,8 +994,40 @@ class _TableDetailScreenState extends State<TableDetailScreen> with SingleTicker
     }
   }
 
+  onAccepted(LoggedInUsers? loggedIn, OrdersProvider orders) async {
+    print("on accepting");
+    Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
+    // loggedIn?.ordersId = loggedIn.id;
+    // loggedIn?.otpByName = user?.name;
+    // loggedIn?.otpById = user?.id;
+    // loggedIn?.otpByPh = user?.phone;
+    // loggedIn?.isFirst = true;
+    // loggedIn?.otp = null;
+
+    TableMaster? table = orders.currentTable;
+    table?.assignedStaffId = user?.id;
+    table?.assignedStaffName = user?.name;
+    table?.assignedStaffPh = user?.phone;
+    table?.occupiedBy = loggedIn?.name;
+    table?.occupiedById = loggedIn?.id;
+    table?.occupiedName = loggedIn?.name;
+    table?.occupiedPh = loggedIn?.phone;
+    table?.from = "otp";
+
+    await Provider.of<TablesProvider>(context, listen: false)
+        .UpdateTable(table, context);
+
+    callTheMethodOnlyTable();
+  }
+
+  void getLoggedInUsersOTP(BuildContext context, String id) {
+    Provider.of<LoggedInProvider>(context, listen: false).GetAllNotifications(context, id ?? "");
+  }
+
 
 }
+
+
 
 
 

@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     //Provider.of<TablesProvider>(context, listen: false).GetAllTables(context);
     Provider.of<LoggedInProvider>(context, listen: false)
-        .GetAllNotifications(context);
+        .GetAllNotifications(context, "");
   }
 
   Future<void> _handleRefresh() async {
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap: () {
                                   Provider.of<LoggedInProvider>(context,
                                           listen: false)
-                                      .GetAllNotifications(context);
+                                      .GetAllNotifications(context, "");
                                 },
                               ),
                               (loggedInUser.loggedInUser?.length ?? 0) > 0
