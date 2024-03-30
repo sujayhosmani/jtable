@@ -4,6 +4,7 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:jtable/Helpers/Constants.dart';
 import 'package:jtable/Helpers/auth_service.dart';
 import 'package:jtable/Models/Auth.dart';
@@ -59,9 +60,9 @@ class TablesProvider with ChangeNotifier{
   Future<List<TableMaster>?> GetAllTables(BuildContext context, bool isFromRefresh) async {
     try{
       if(isFromRefresh){
-        performGetTables(context);
+        await performGetTables(context);
       }else if(((_tableMaster?.length ?? 0) == 0)){
-        performGetTables(context);
+        await performGetTables(context);
       }
       
         return _tableMaster;
@@ -100,7 +101,7 @@ class TablesProvider with ChangeNotifier{
             val?.tableNo ?? "", shouldNavigate: true);
       }
       if(val != null){
-        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(val);
+        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(val, context);
         return val;
       }
 
@@ -116,7 +117,7 @@ class TablesProvider with ChangeNotifier{
       TableMaster? val = master?[index];
 
       if(val != null){
-        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(val);
+        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(val, context);
         return val;
       }
 
@@ -152,15 +153,27 @@ class TablesProvider with ChangeNotifier{
       TableMaster table = tables.first;
       print("updateFromSignalR 2");
       int index = _tableMaster.indexWhere((element) => element.tableNo == table.tableNo);
+      var id = _assignedTableMaster.first.assignedStaffId;
+      if(id == table.assignedStaffId && (((table.pending ?? 0) > (tableMaster[index].pending ?? 0)) || ((table.progress ?? 0) > (tableMaster[index].progress ?? 0)))){
+        HapticFeedback.heavyImpact();
+      }
+      if(table.isOccupied == false && (table.requestingOtp ?? 0) > 0){
+        HapticFeedback.heavyImpact();
+      }
       _tableMaster[index] = table;
       print("updateFromSignalR 3");
-      var id = _assignedTableMaster.first.assignedStaffId;
+
       print("updateFromSignalR 4");
+
+
       _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
       print("updateFromSignalR 5");
+
       _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
       print(_tableMaster.length);
-      Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(table);
+
+      Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(table, context);
+
       loadCategories();
       notifyListeners();
     }catch(e){
@@ -181,6 +194,23 @@ class TablesProvider with ChangeNotifier{
       return null;
     }
   }
+
+  SwitchTable(TableMaster? fromTable, TableMaster? toTable, BuildContext context) async {
+    try{
+      var val = {
+        'FromTableDetails': fromTable,
+        'ToTableDetails': toTable
+      };
+      final response = await _helper.post("table/tableswitch", val,  context);
+      if(response != null){
+        await GetAllTables(context, true);
+      }
+
+    }catch(e){
+      return null;
+    }
+  }
+
 
   void onValueChanged(int value){
     _selectedVal = value;

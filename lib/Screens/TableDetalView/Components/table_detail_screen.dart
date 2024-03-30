@@ -21,6 +21,10 @@ import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:jtable/Screens/TableDetalView/Components/bill_detail_view.dart';
 import 'package:jtable/Screens/TableDetalView/Components/table_detail_view_screen.dart';
+import 'package:jtable/Screens/TableDetalView/Dialogs/clear_avoid_dialog.dart';
+import 'package:jtable/Screens/TableDetalView/Dialogs/clear_table_choice_dialog.dart';
+import 'package:jtable/Screens/TableDetalView/Dialogs/switch_table_dialog.dart';
+import 'package:jtable/Screens/TableDetalView/Widgets/items.dart';
 import 'package:jtable/Screens/ViewTableScreen/table_view_screen.dart';
 import 'package:jtable/Screens/shared/input.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
@@ -110,14 +114,18 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     if(!isOrderJoined){
       joinTheGroup();
     }
-    // if(mas != null){
-    //   setState(() {
-    //     print("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq;");
-    //     print(json.encode(mas));
-    //     finalTable2 = mas;
-    //   });
-    //
-    // }
+
+  }
+
+
+  getOrdersByOrderId(){
+    finalTable2 = Provider.of<OrdersProvider>(context, listen: false).currentTable!;
+    if(finalTable2.isOccupied ?? false){
+      Provider.of<OrdersProvider>(context, listen: false).GetOrdersByOrderId(
+          context,
+          finalTable2.occupiedById ?? "",
+          finalTable2.tableNo ?? "", shouldNavigate: true);
+    }
 
   }
 
@@ -126,71 +134,76 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     if(!isOrderJoined){
       joinTheGroup();
     }
-    // if(mas != null){
-    //   setState(() {
-    //     finalTable2 = mas;
-    //     print("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq;");
-    //     print(json.encode(finalTable2));
-    //
-    //   });
-    //
-    // }
 
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            finalTable2.tableNo ?? "",
-            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 30),
-          ),
-          actions: [
-            Consumer<OrdersProvider>(builder: (context, orders, child) {
-              return orders.currentTable?.isOccupied ?? false ? TextButton(onPressed: () {}, child: Text("otp: ${orders.currentTable?.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),)): Container();
-            }),
-            Consumer<OrdersProvider>(builder: (context, orders, child) {
-              return orders.currentTable?.isOccupied ?? false ? addItemAction() : Container();
-            }),
-
-          ],
-        ),
-      body: Stack(
-        children: [
-
-          Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
-            print("consuminhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-            print(orders.currentTable?.totalBill);
-            print(orders.pending_orders?.length ?? 0);
-            if(!isOrderJoined && (orders.currentTable?.isOccupied ?? false) == true){
-              joinTheGroup();
-            }
-            return (orders.currentTable?.isOccupied ?? false) ? Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                buildPrimaryTopBar(slide.selectedVal),
-                buildTabBar(slide, orders),
-                buildTabBarView(slide, orders),
-                //buildOtherViews(slide.selectedVal),
-                Consumer<FooterProvider>(builder: (context, footer, child) {
-                  return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
-                })
+    return Consumer<SignalRService>(builder: (context, signal, child) {
+      return Scaffold(
+          appBar: AppBar(
+            backgroundColor: signal.connectionIsOpen ? Colors.orangeAccent : Colors.redAccent,
+            title: Text(
+              finalTable2.tableNo ?? "",
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
+            ),
+            actions: [
+          Consumer<OrdersProvider>(builder: (context, orders, child) {
+              return Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.black,),
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    signal.initializeConnection(context);
+                    if(orders.currentTable?.isOccupied ?? false) {callTheMethod();}else{getLoggedInUsersOTP(context, finalTable2.id ?? "");}
+                  },
+                ),
+                orders.currentTable?.isOccupied ?? false ? Text("otp: ${orders.currentTable?.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),): Container(),
+                orders.currentTable?.isOccupied ?? false ? addItemAction() : Container()
               ],
-            ) : fillUserDetails(orders);
-          }),
-          Consumer<GlobalProvider>(builder: (context, global, child) {
-            print(global.error);
-            return LoadingScreen(
-              isBusy: global.isBusy,
-              error: global.error ?? "",
-              onPressed: () {},
-            );
+              );
           })
-        ],
-      )
 
-    );
+            ],
+          ),
+          body: Stack(
+            children: [
+
+              Consumer2<SliderProvider, OrdersProvider>(builder: (context, slide, orders, child) {
+                print("consuminhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+                print(orders.currentTable?.totalBill);
+                print(orders.pending_orders?.length ?? 0);
+                if(!isOrderJoined && (orders.currentTable?.isOccupied ?? false) == true){
+                  joinTheGroup();
+                }
+                return (orders.currentTable?.isOccupied ?? false) ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    buildPrimaryTopBar(slide.selectedVal),
+                    buildTabBar(slide, orders),
+                    buildTabBarView(slide, orders),
+                    //buildOtherViews(slide.selectedVal),
+                    Consumer<FooterProvider>(builder: (context, footer, child) {
+                      return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
+                    })
+                  ],
+                ) : fillUserDetails(orders);
+              }),
+              Consumer<GlobalProvider>(builder: (context, global, child) {
+                print(global.error);
+                return LoadingScreen(
+                  isBusy: global.isBusy,
+                  error: global.error ?? "",
+                  onPressed: () {},
+                );
+              })
+            ],
+          )
+
+      );
+    });
+
   }
 
   buildPrimaryTopBar(selectedVal){
@@ -250,7 +263,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: OutlinedButton(onPressed: ()=> print(""), child: Text("Go to Table view", style: TextStyle(color: Colors.black),), style: ElevatedButton.styleFrom(
+            child: OutlinedButton(onPressed: ()=> Navigator.pop(context), child: Text("Go to Table view", style: TextStyle(color: Colors.black),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -267,7 +280,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
 
   getFooterBarBasedOnSelectedVal(selectedVal, secVal, OrdersProvider ordersProvider) {
     switch(selectedVal){
-      case 1: return buildTableFooter();
+      case 1: return buildTableFooter(ordersProvider);
       case 2: return buildCartFooter(ordersProvider);
       case 3: return buildOrderFooter(secVal, ordersProvider);
       case 4: return buildBillFooter();
@@ -275,7 +288,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     }
   }
 
-  buildTableFooter() {
+  buildTableFooter(OrdersProvider ordersProvider) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -283,7 +296,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Switch Table", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+            child: ElevatedButton(onPressed: ()=> onSwitchTable(ordersProvider), child: Text("Switch Table", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -297,7 +310,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Clear Table", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+            child: ElevatedButton(onPressed: () async => await onTableClear(ordersProvider), child: Text("Clear Table", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -355,7 +368,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: OutlinedButton(onPressed: ()=> print(""), child: Text("Close", style: TextStyle(color: Colors.black),), style: ElevatedButton.styleFrom(
+            child: OutlinedButton(onPressed: ()=> Navigator.pop(context), child: Text("Close", style: TextStyle(color: Colors.black),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -369,7 +382,13 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
           flex: 1,
           child: Container(
             width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Add Item", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+            child: ElevatedButton(onPressed: (){
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return MenuScreen(tableNo: finalTable2.tableNo ?? "");
+                  },
+                  fullscreenDialog: true));
+            }, child: Text("Add Item", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -476,22 +495,22 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                     Container(
                       //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      child: _itemList(orders: orders.pending_orders, from: 'pending',),
+                      child: ItemList(orders: orders.pending_orders, from: 'pending',),
                     ),
                     Container(
                       //margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      child: _itemList(orders: orders.inprogress_orders, from: 'in_progress',),
+                      child: ItemList(orders: orders.inprogress_orders, from: 'in_progress',),
                     ),
                     Container(
                       //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      child: _itemList(orders: orders.completedOrders, from: 'completed',),
+                      child: ItemList(orders: orders.completedOrders, from: 'completed',),
                     ),
                     Container(
                       //margin: EdgeInsets.fromLTRB(0, 0, 0, 40),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      child: _itemList(orders: orders.merged_orders, from: 'all',),
+                      child: ItemList(orders: orders.merged_orders, from: 'all',),
                     ),
                   ]),
             ),
@@ -591,8 +610,6 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
   }
 
   buildForPending(List<Orders>? pendingOrders, List<Orders>? progressOrders) {
-
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -629,8 +646,6 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
   }
 
   buildForProgress(List<Orders>? progressOrders) {
-
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -701,7 +716,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
             });
         });
       }
-      case 4: return const BillDetailViewScreen();
+      case 4: return BillDetailViewScreen(tableMaster: orders.currentTable!, orderDetails: (orders.orders?.length ?? 0) > 0 ? orders.orders : null);
       default: return Container();
     }
   }
@@ -747,13 +762,18 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
             },
             tabs: [
               Tab(
-                child: Badge(
-                  offset: const Offset(12, -9),
-                  alignment: Alignment.topRight,
-                  label: Text("1"),
-                  child: const Text("Users OTP"),
+                child: Consumer<LoggedInProvider>(builder: (context, loggedInUser, child){
+                  return  Badge(
+                    offset: const Offset(12, -9),
+                    alignment: Alignment.topRight,
+                    isLabelVisible: (loggedInUser.notificationLoggedInUserForTable?.length ?? 0) > 0,
+                    label: (loggedInUser.notificationLoggedInUserForTable?.length ?? 0) > 0
+                        ? Text(loggedInUser.notificationLoggedInUserForTable?.length.toString() ?? "")
+                        : Text(""),
+                    child: const Text("Users OTP"),
 
-                ),
+                  );
+                }),
               ),
 
               Tab(
@@ -881,6 +901,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                                           (orders.currentTable?.joinOTP != null && user?.id == orders.currentTable?.assignedStaffId) ? TextButton(
                                             onPressed: () =>
                                                 setState(() {
+
                                                   orders.currentTable?.joinOTP = null;
                                                 }),
                                             child: Text(
@@ -898,52 +919,54 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                     })
                     : Text("");
               }),
-              Container(
-                child: Column(
-                  children: [
-                    SizedBox(height: 8,),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(child: Text("Enter the user details", style: TextStyle(fontSize: 18, ),)),
-                    ),
-                    SizedBox(height: 6,),
-                    InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
-                    SizedBox(height: 15,),
-                    InputText(isPassword: false,title: "Phone number",icon: Icons.phone, mCtrl: mPhoneNumber),
-                    SizedBox(height: 15,),
-                    InputText(isPassword: false,title: "No of people",icon: Icons.group, mCtrl: mNoOfPeople),
-                    SizedBox(height: 15,),
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(50),
-                          gradient: Utils.btnGradient
+              SingleChildScrollView(
+                child: Container(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8,),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(child: Text("Enter the user details", style: TextStyle(fontSize: 18, ),)),
                       ),
-                      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            padding: EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(60)
-                            )
+                      SizedBox(height: 6,),
+                      InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
+                      SizedBox(height: 15,),
+                      InputText(isPassword: false,title: "Phone number",icon: Icons.phone, mCtrl: mPhoneNumber),
+                      SizedBox(height: 15,),
+                      InputText(isPassword: false,title: "No of people",icon: Icons.group, mCtrl: mNoOfPeople),
+                      SizedBox(height: 15,),
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            gradient: Utils.btnGradient
                         ),
+                        margin: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              padding: EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(60)
+                              )
+                          ),
 
-                        child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                        onPressed: () { onUserSubmit(orders); },
+                          child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                          onPressed: () { onUserSubmit(orders); },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               )
             ],
           )
         ),
         Consumer2<LoggedInProvider, FooterProvider>(builder: (context, loggedInUser, footer, child){
-          return  (loggedInUser.notificationLoggedInUserForTable?.length ?? 0) > 0 && footer.selectedFooterOTP == 0
+          return  footer.selectedFooterOTP == 0
               ? Container(
             width: double.infinity,
-            child: ElevatedButton(onPressed: ()=> print(""), child: Text("Clear Table", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+            child: ElevatedButton(onPressed: () async => await onTableClear(orders), child: Text("Clear Tables", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.zero
                 ),
@@ -985,6 +1008,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
         bool? isInserted = await Provider.of<LoggedInProvider>(context, listen: false).InsertLoggedIN(createUser, context);
         if(isInserted != null){
           if(isInserted){
+            Provider.of<SliderProvider>(context, listen: false).onValueChanged(2, isNotify: false);
             callTheMethod();
           }
         }
@@ -1013,7 +1037,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     table?.occupiedName = loggedIn?.name;
     table?.occupiedPh = loggedIn?.phone;
     table?.from = "otp";
-
+    // correct
     await Provider.of<TablesProvider>(context, listen: false)
         .UpdateTable(table, context);
 
@@ -1024,266 +1048,63 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     Provider.of<LoggedInProvider>(context, listen: false).GetAllNotifications(context, id ?? "");
   }
 
-
-}
-
-
-
-
-
-
-class _itemList extends StatelessWidget {
-  final List<Orders>? orders;
-  final String from;
-  // final Function onCancel;
-
-  const _itemList(
-      {super.key, required this.orders, required this.from});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-        scrollDirection: Axis.vertical,
-        shrinkWrap: true,
-        padding: EdgeInsets.fromLTRB(0, 0, 0, 45),
-        itemCount: orders?.length ?? 0,
-        itemBuilder: (context, index) {
-          return Column(
-            children: [
-              Table(
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                border: TableBorder(bottom: BorderSide(width: 1,
-                    color: Colors.grey.shade300,
-                    style: BorderStyle.solid)),
-                columnWidths: from == "pending" || from == "in_progress" ? const {
-                  0: FlexColumnWidth(6),
-                  1: FlexColumnWidth(1),
-                  2: FlexColumnWidth(2),
-                  3: FlexColumnWidth(3)
-                }:
-                from == "completed" ?
-                const {
-                  0: FlexColumnWidth(6),
-                  1: FlexColumnWidth(1),
-                  2: FlexColumnWidth(2),
-                  3: FlexColumnWidth(2)
-                }:
-                const {
-                  0: FlexColumnWidth(6),
-                  1: FlexColumnWidth(1),
-                  2: FlexColumnWidth(2),
-                },
-                children: [
-                  TableRow(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 5, 0, 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                orders?[index].itemName ?? "", style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey.shade800),),
-                              orders?[index].varName != null
-                                  ? Text(orders?[index].varName ?? "",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w100, fontSize: 11),)
-                                  : Container()
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 5, 0, 8),
-                          child: Text(
-                            "X${orders?[index].quantity.toString() ?? ""}" ??
-                                "", style: TextStyle(fontSize: 13.0),),
-                        ),
-
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 5, 0, 8),
-                          child: Text(orders?[index].status == "cancelled" ? "cancelled" : (orders?[index].price.toString() ?? ""),
-                              style: TextStyle(fontSize: 12.0),
-                              textAlign: TextAlign.end),
-                        ),
-                        from != "all" ? Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 5, 0, 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              InkWell(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4, horizontal: 1),
-                                    child: Icon(Icons.delete_outline,
-                                      color: Colors.red.shade400,),
-                                  ),
-                                  onTap: () => {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => CancelItemDialog(order: orders![index]),
-                                    )
-                                  }
-                              ),
-                              from == "pending" || from == "in_progress" ? SizedBox(width: 10,): Container(),
-                              from == "pending" || from == "in_progress" ?  InkWell(
-                                  child: Container(
-
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 6, horizontal: 4),
-                                        child: Icon(Icons.done,
-                                          color: Colors.green.shade500,),
-                                      )
-                                  ),
-                                  onTap: () =>
-                                  {
-                                    onAcceptPending(orders![index], context, from)
-                                  }
-                              ) : Container(),
-                              SizedBox(width: 6,),
-
-                            ],
-                          ),
-                        ): Container(),
-                      ],
-                      decoration: BoxDecoration(
-                          color: orders?[index]?.status == "cancelled" ? Colors.red.shade200 : Colors.transparent
-                      )),
-                ],
-              ),
-            ],
-          );
-        });
-  }
-
-  onAcceptPending(Orders order, BuildContext context, String from) {
-    print(from);
-    if(from == "pending"){
-      order.status = "in_progress";
-    }else if(from == "in_progress"){
-      order.status = "completed";
+  onTableClear(OrdersProvider orders) async {
+    await Provider.of<TablesProvider>(context, listen: false).onUserSubmitViewPage(context, finalTable2.tableNo ?? "");
+    TableMaster? table = orders.currentTable;
+    if(table?.isOccupied ?? false){
+      if ((table?.completed ?? 0) + (table?.pending ?? 0) + (table?.progress ?? 0) > 0) {
+        showDialog(
+          context: context,
+          builder: (context) => ClearAvoidDialog(),
+        );
+      }else{
+        showDialog(
+          context: context,
+          builder: (context) => ClearChoiceDialog(tableMaster: table),
+        );
+      }
+    }else{
+        await onConfirmTableClear(table, "not occupied");
     }
-    List<Orders> orders = [];
-    orders.add(order);
-    log(json.encode(orders));
-    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
+
+
   }
 
+  onConfirmTableClear(TableMaster? table, String reason) async {
+    table?.joinOTP = null;
+    table?.assignedStaffId = null;
+    table?.reason = reason;
+    table?.from = "clear";
 
 
+    print("111111111111111111111111111111111111111111111111111111111111111111111111111");
+    print(jsonEncode(table));
+    print("111111111111111111111111111111111111111111111111111111111111111111111111111");
+    await Provider.of<TablesProvider>(context, listen: false)
+        .UpdateTable(table, context);
 
-}
+    Navigator.pop(context);
+  }
 
+  onSwitchTable(OrdersProvider orders) {
+    TableMaster? table = orders.currentTable;
+    List<TableMaster> destinations = Provider.of<TablesProvider>(context, listen: false).tableMaster;
+    showDialog(
+      context: context,
+      builder: (context) => SwitchTableDialog(currentTable: table, destinations: destinations,),
 
-class CancelItemDialog extends StatefulWidget {
-  final Orders order;
-  const CancelItemDialog({super.key, required this.order});
-
-  @override
-  State<CancelItemDialog> createState() => _CancelItemDialogState();
-}
-
-class _CancelItemDialogState extends State<CancelItemDialog> {
-  String? reason = "User ordered by mistake";
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          child: AlertDialog(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Do you want to cancel", style: TextStyle(fontSize: 16),),
-                Text(widget.order.itemName ?? "", style: TextStyle(color: Colors.grey, fontSize: 14),)
-              ],
-            ),
-            content: Container(
-              height: 130,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Radio(value: "User ordered by mistake", materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, groupValue: reason, onChanged: (value){
-                          setState(() {
-                            reason = value.toString();
-                          });
-                        }),
-                        Text("User selected by mistake")
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Radio(value: "Not available", materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, groupValue: reason, onChanged: (value){
-                          setState(() {
-                            reason = value.toString();
-                          });
-                        }),
-                        Text("Not available")
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Radio(value: "Wrongly listed in menu", materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,groupValue: reason, onChanged: (value){
-                          setState(() {
-                            reason = value.toString();
-                          });
-                        }),
-                        Text("Wrongly listed in menu")
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-
-            contentPadding: EdgeInsets.zero,
-            actions: [
-              TextButton(
-                style: TextButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Text('Cancel'),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap
-                ),
-                onPressed: () {
-                  OnCancelledItem(widget.order, reason!);
-                },
-                child: Text('Ok'),
-              ),
-            ],
-          ),
-        ),
-        Consumer<GlobalProvider>(builder: (context, global, child){
-          print(global.error);
-          return LoadingScreen(isBusy: global.isBusy,error: global?.error ?? "", onPressed: (){},);
-        })
-
-      ],
     );
   }
 
-  Future<void> OnCancelledItem(Orders order, String remark) async {
 
-    Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
-    order.status = "cancelled";
-    order.cancelledById = user?.id;
-    order.cancelledByName = user?.name;
-    order.remarks = remark;
-    List<Orders> orders = [];
-    orders.add(order);
-    await Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
-    Navigator.pop(context);
-  }
 }
+
+
+
+
+
+
+
+
+
+

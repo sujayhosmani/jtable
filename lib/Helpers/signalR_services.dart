@@ -92,7 +92,7 @@ class SignalRService with ChangeNotifier{
 
   joinOrder(String tableId, String orderId) async
   {
-    print("signalRService joined order" + tableId.toString());
+    print("signalRService joined order" + tableId.toString() + " " + orderId);
     await connection.invokeAsync('JoinGroup', ["order" + ResId + tableId + orderId]);
   }
 

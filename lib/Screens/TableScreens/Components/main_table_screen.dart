@@ -21,6 +21,7 @@ import 'package:jtable/Screens/StudentScreen/Widgets/assigned_tables.dart';
 import 'package:jtable/Screens/StudentScreen/Widgets/rank_widget.dart';
 import 'package:jtable/Screens/TableDetalView/Components/table_detail_screen.dart';
 import 'package:jtable/Screens/TableScreens/Widgets/all_table.dart';
+import 'package:jtable/Screens/UserDetailScreen/user_detail_screen.dart';
 import 'package:jtable/Screens/ViewTableScreen/table_view_screen.dart';
 import 'package:jtable/Screens/settings/Components/settings_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
@@ -72,8 +73,9 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     super.initState();
   }
 
-  Future<void> _handleRefresh() async {
-    Provider.of<TablesProvider>(context, listen: false).GetAllTables(context, true);
+  Future<void> _handleRefresh({bool isSignal = false, required SignalRService signal}) async {
+      signal.initializeConnection(context);
+      Provider.of<TablesProvider>(context, listen: false).GetAllTables(context, true);
   }
 
   @override
@@ -94,19 +96,19 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
                       IconButton(
                         icon: const Icon(Icons.refresh, color: Colors.black,),
                         onPressed: () => {
-                          _handleRefresh()
+                          _handleRefresh(signal: signal)
                         },
                       ),
                       IconButton(
-                        icon: const Icon(Icons.settings, color: Colors.black,),
+                        icon: const Icon(Icons.person, color: Colors.black,),
                         onPressed: () => {
                           Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                            return HomeScreen();
+                            return SettingsScreen();
                           }))
                         },
                       ),
                     ],
-                  ) : ElevatedButton(onPressed: () => signal.initializeConnection(context), child: Text("Retry now!")),
+                  ) : ElevatedButton(onPressed: () => _handleRefresh(signal: signal, isSignal: true), child: Text("Retry now!")),
                 ],
               ),
             )
@@ -114,7 +116,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         ),
         body: Stack(
           children: [
-            buildTables2(),
+            buildTables2(signal),
             Consumer<GlobalProvider>(builder: (context, global, child) {
               print(global.error);
               return LoadingScreen(
@@ -386,7 +388,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         }) : Container();
   }
 
-  loadAllContent(TablesProvider tab) {
+  loadAllContent(TablesProvider tab, signal) {
     return (tab.tableMaster?.length ?? 0) > 0 ? ListView.builder(
         padding: const EdgeInsets.fromLTRB(8,0,8,12),
         itemCount: tab.categories.length,
@@ -459,7 +461,34 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     });
   }
 
-  buildTables() {
+  // buildTables() {
+  //   return Column(
+  //     children: [
+  //       const SizedBox(height: 12,),
+  //       segmentedControl(),
+  //       const SizedBox(height: 12,),
+  //       Expanded(
+  //         child: Consumer<TablesProvider>(builder: (context, tab, child) {
+  //           if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
+  //             //timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
+  //           }
+  //           print("on refresh");
+  //           if(tab.selectedVal == 1){
+  //             return loadAssignedContent(tab);
+  //           }
+  //           if(tab.selectedVal == 2){
+  //             return loadAllContent(tab);
+  //           }
+  //           return loadReqContent(tab);
+  //
+  //
+  //         }),
+  //       ),
+  //     ],
+  //   );
+  // }
+
+  buildTables2(signal) {
     return Column(
       children: [
         const SizedBox(height: 12,),
@@ -467,41 +496,15 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         const SizedBox(height: 12,),
         Expanded(
           child: Consumer<TablesProvider>(builder: (context, tab, child) {
-            if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-              //timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-            }
-            print("on refresh");
-            if(tab.selectedVal == 1){
-              return loadAssignedContent(tab);
-            }
-            if(tab.selectedVal == 2){
-              return loadAllContent(tab);
-            }
-            return loadReqContent(tab);
-
-
-          }),
-        ),
-      ],
-    );
-  }
-
-  buildTables2() {
-    return Column(
-      children: [
-        const SizedBox(height: 12,),
-        segmentedControl(),
-        const SizedBox(height: 12,),
-        Expanded(
-          child: Consumer<TablesProvider>(builder: (context, tab, child) {
-            if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-              timer = Timer.periodic(const Duration(seconds: 120), (Timer t) => tab.calculateDuration(true));
+            if(((tab.tableMaster?.length ?? 0) > 0) && timer == null){
+              print("inside Timerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+              timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
             }
             print("on refresh");
             return Stack(
               children: [
                 Visibility(
-                    child: loadAllContent(tab),
+                    child: loadAllContent(tab, signal),
                   visible: tab.selectedVal == 2,
                   maintainSize: true,
                   maintainAnimation: true,
@@ -531,82 +534,82 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     );
   }
 
-  buildTables3() {
-    return Column(
-      children: [
-        const SizedBox(height: 12,),
-        segmentedControl(),
-        const SizedBox(height: 12,),
-        Expanded(
-          child: Consumer<TablesProvider>(builder: (context, tab, child) {
-            if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-              timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-            }
-            print("on refresh");
-            return Stack(
-              children: [
-                Visibility(
-                  child: simpleGridAssigned(tab),
-                  visible: tab.selectedVal == 1,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                  child: simpleGridAll(tab),
-                  visible: tab.selectedVal == 2,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                  child: simpleGridReq(tab),
-                  visible: tab.selectedVal == 3,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-              ],
-            );
+  // buildTables3() {
+  //   return Column(
+  //     children: [
+  //       const SizedBox(height: 12,),
+  //       segmentedControl(),
+  //       const SizedBox(height: 12,),
+  //       Expanded(
+  //         child: Consumer<TablesProvider>(builder: (context, tab, child) {
+  //           if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
+  //             timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
+  //           }
+  //           print("on refresh");
+  //           return Stack(
+  //             children: [
+  //               Visibility(
+  //                 child: simpleGridAssigned(tab),
+  //                 visible: tab.selectedVal == 1,
+  //                 maintainSize: true,
+  //                 maintainAnimation: true,
+  //                 maintainState: true,
+  //               ),
+  //               Visibility(
+  //                 child: simpleGridAll(tab),
+  //                 visible: tab.selectedVal == 2,
+  //                 maintainSize: true,
+  //                 maintainAnimation: true,
+  //                 maintainState: true,
+  //               ),
+  //               Visibility(
+  //                 child: simpleGridReq(tab),
+  //                 visible: tab.selectedVal == 3,
+  //                 maintainSize: true,
+  //                 maintainAnimation: true,
+  //                 maintainState: true,
+  //               ),
+  //             ],
+  //           );
+  //
+  //
+  //         }),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-
-          }),
-        ),
-      ],
-    );
-  }
-
-  loadTabView() {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          bottom: const TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.directions_car)),
-              Tab(icon: Icon(Icons.directions_transit)),
-              Tab(icon: Icon(Icons.directions_bike)),
-            ],
-          ),
-          title: const Text('Tabs Demo'),
-        ),
-        body: Consumer<TablesProvider>(builder: (context, tab, child) {
-          if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-            //timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-          }
-          return TabBarView(
-            children: [
-              loadAssignedContent(tab),
-              loadAllContent(tab),
-              Icon(Icons.directions_bike),
-            ],
-          );
-
-
-        }),
-      ),
-    );
-  }
+  // loadTabView() {
+  //   return DefaultTabController(
+  //     length: 3,
+  //     child: Scaffold(
+  //       appBar: AppBar(
+  //         bottom: const TabBar(
+  //           tabs: [
+  //             Tab(icon: Icon(Icons.directions_car)),
+  //             Tab(icon: Icon(Icons.directions_transit)),
+  //             Tab(icon: Icon(Icons.directions_bike)),
+  //           ],
+  //         ),
+  //         title: const Text('Tabs Demo'),
+  //       ),
+  //       body: Consumer<TablesProvider>(builder: (context, tab, child) {
+  //         if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
+  //           //timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
+  //         }
+  //         return TabBarView(
+  //           children: [
+  //             loadAssignedContent(tab),
+  //             loadAllContent(tab),
+  //             Icon(Icons.directions_bike),
+  //           ],
+  //         );
+  //
+  //
+  //       }),
+  //     ),
+  //   );
+  // }
 
   @override
   bool get wantKeepAlive => true;

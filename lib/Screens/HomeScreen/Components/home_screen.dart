@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
     table?.occupiedName = loggedIn?.name;
     table?.occupiedPh = loggedIn?.phone;
     table?.from = "otp";
-
+// not using
     await Provider.of<TablesProvider>(context, listen: false)
         .UpdateTable(table, context);
 
@@ -293,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       loggedIn?.otp = table?.joinOTP;
     });
-
+//not using
     //Provider.of<TablesProvider>(context, listen: false).UpdateTable(table, context);
   }
 }

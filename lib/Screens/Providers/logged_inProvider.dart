@@ -52,9 +52,13 @@ class LoggedInProvider with ChangeNotifier{
 
   }
 
-  clearLoggedInUsers(){
+  clearLoggedInUsers({bool isNotify = false}){
     _loggedInUserForTable = [];
     _notificationLoggedInUserForTable = [];
+    if(isNotify){
+      notifyListeners();
+    }
+
   }
 
   Future<List<LoggedInUsers>?> GetAllNotifications(BuildContext context, String id) async {

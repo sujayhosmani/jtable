@@ -32,6 +32,9 @@ class SliderProvider with ChangeNotifier{
 
   onValueChanged(int v, {bool isNotify = true}){
     _selectedVal = v;
+    if(v == 3){
+
+    }
     if(isNotify){
       notifyListeners();
     }

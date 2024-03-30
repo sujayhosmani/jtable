@@ -173,7 +173,7 @@ class _TableViewScreenState extends State<TableViewScreen> {
     widget.tableMaster.isReserved = false;
     widget.tableMaster.from = "clean";
 
-
+// not using
     await Provider.of<TablesProvider>(context, listen: false)
         .UpdateTable(widget.tableMaster, context);
 

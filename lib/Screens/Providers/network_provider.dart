@@ -103,6 +103,14 @@ class NetworkProvider with ChangeNotifier{
     return utf8.decode(base64Url.decode(output));
   }
 
+  void clearAll(){
+    resUniq = "";
+    id = "";
+    phone = "";
+    resId = "";
+    role = "";
+  }
+
   void setToken(String? token) {
     if (token != null) {
       Map<String, dynamic> jCur = parseJwt(token ?? "");

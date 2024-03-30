@@ -20,7 +20,7 @@ class ParentDetails extends StatelessWidget {
                   color: Colors.blueGrey,
                   height: 75,
                   width: 75,
-                  child: Center(child: Text("Su", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 23),)),
+                  child: Center(child: Text("SU", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 23),)),
                 )
             ),
             SizedBox(width: 20,),

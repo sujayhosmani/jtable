@@ -23,7 +23,7 @@ class _NavScreenState extends State<NavScreen> {
   @override
   void initState() {
     print("signalRService oninit state");
-    Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
+    //Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
     super.initState();
   }
 
@@ -78,7 +78,7 @@ class _NavScreenState extends State<NavScreen> {
                     onPressed: () => {
                       //_handleRefresh()
                     },
-                  ) : ElevatedButton(onPressed: () => signal.initializeConnection(context), child: Text("Retry now!")),
+                  ) : ElevatedButton(onPressed: () => signal.initializeConnection(context), child: Text("Retry nowsd!")),
                 ],
               ),
             )

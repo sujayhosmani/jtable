@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:jtable/Helpers/auth_service.dart';
 import 'package:jtable/Models/Table_master.dart';
+import 'package:jtable/Models/Users.dart';
 import 'package:jtable/Screens/HomeScreen/Widgets/parent_detail.dart';
+import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
@@ -28,9 +31,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   };
   Sky _selectedSegment = Sky.midnight;
 
+  Users? loggedInUser;
+
+
+
   @override
   void initState() {
     super.initState();
+    loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
     _controller = PersistentTabController();
   }
 
@@ -264,19 +272,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               children: [
                 SizedBox(height: 12,),
-                ParentDetails(),
+                Container(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 8),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(60),
+                            child: Container(
+                              color: Colors.blueGrey,
+                              height: 75,
+                              width: 75,
+                              child: (loggedInUser?.name ?? "NAA").length > 1 ? Center(child: Text(((loggedInUser?.name ?? "NAA").substring(0,2)).toUpperCase(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 23),))
+                                  : Center(child: Text("NA", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 23),)),
+                            )
+                        ),
+                        SizedBox(width: 20,),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text(loggedInUser?.name ?? "", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+                            Text(loggedInUser?.role ?? ""),
+                            Text(loggedInUser?.phone ?? ""),
+                          ],
+                        )
+
+                      ],
+                    ),
+                  ),
+                ),
                 SizedBox(height: 8,),
                 Divider(height: 0.1, color: Colors.grey[300]),
-                ListTile(title: Text("Choose Preffered Tables"), dense: false, leading: Icon(Icons.select_all), onTap: () => print("sdf"),),
-                Divider(height: 0.1, color: Colors.grey[300]),
-
-                ListTile(title: Text("Refresh token"), dense: false, leading: Icon(Icons.refresh), onTap: () => print("sdf"),),
-                Divider(height: 0.1, color: Colors.grey[300]),
-                ListTile(title: Text("Sync Menu"), dense: false, leading: Icon(Icons.sync), onTap: () => print("sdf"),),
-                Divider(height: 0.1, color: Colors.grey[300]),
-                ListTile(title: Text("Change Password"), dense: false, leading: Icon(Icons.password), onTap: () => print("sdf"),),
-                Divider(height: 0.1, color: Colors.grey[300]),
-                ListTile(title: Text("Logout"), dense: false, leading: Icon(Icons.logout), onTap: () => print("sdf"),),
+                // ListTile(title: Text("Choose Preffered Tables"), dense: false, leading: Icon(Icons.select_all), onTap: () => print("sdf"),),
+                // Divider(height: 0.1, color: Colors.grey[300]),
+                //
+                // ListTile(title: Text("Refresh token"), dense: false, leading: Icon(Icons.refresh), onTap: () => print("sdf"),),
+                // Divider(height: 0.1, color: Colors.grey[300]),
+                // ListTile(title: Text("Sync Menu"), dense: false, leading: Icon(Icons.sync), onTap: () => print("sdf"),),
+                // Divider(height: 0.1, color: Colors.grey[300]),
+                // ListTile(title: Text("Change Password"), dense: false, leading: Icon(Icons.password), onTap: () => print("sdf"),),
+                // Divider(height: 0.1, color: Colors.grey[300]),
+                ListTile(title: Text("Logout"), dense: false, leading: Icon(Icons.logout), onTap: () => handleLogout(),),
                 Divider(height: 0.1, color: Colors.grey[300]),
               ],
             )
@@ -287,5 +325,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       ],
     );
+  }
+
+  handleLogout() {
+    Provider.of<NetworkProvider>(context, listen: false).clearAll();
+    AuthService auth = new AuthService();
+    auth.logout(context);
   }
 }
