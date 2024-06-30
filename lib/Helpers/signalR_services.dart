@@ -5,6 +5,7 @@ import 'package:jtable/Helpers/Constants.dart';
 import 'package:jtable/Helpers/navigation_service.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
+import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,7 @@ import 'package:signalr_pure/signalr_pure.dart';
 
 class SignalRService with ChangeNotifier{
 
-  static const _serverUrl = "https://jmenu.azurewebsites.net/api/notify";
+  static const _serverUrl = baseUrl + "notify";
    late HubConnection connection;
   // late Logger _logger;
   bool connectionIsOpen = false;
@@ -41,14 +42,15 @@ class SignalRService with ChangeNotifier{
         connection = builder.build();
 
         if (connection.state != HubConnectionState.connected) {
-
+          String resId = Provider.of<NetworkProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).resId ?? "";
+          print("The ResId is ::::::::::::::: " + (resId ?? ""));
           await setSignalrClientMethods();
 
 
 
 
           await connection.startAsync();
-          await joinRequiredGroups();
+          await joinRequiredGroups(resId);
           connectionIsOpen = true;
 
 
@@ -85,21 +87,23 @@ class SignalRService with ChangeNotifier{
     }
   }
 
-  joinRequiredGroups() async
+  joinRequiredGroups(String resId) async
   {
-    await connection.invokeAsync('JoinGroup', ["table" + ResId]);
+    await connection.invokeAsync('JoinGroup', ["table" + resId]);
   }
 
   joinOrder(String tableId, String orderId) async
   {
+    String resId = Provider.of<NetworkProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).resId ?? "";
     print("signalRService joined order" + tableId.toString() + " " + orderId);
-    await connection.invokeAsync('JoinGroup', ["order" + ResId + tableId + orderId]);
+    await connection.invokeAsync('JoinGroup', ["order" + resId + tableId + orderId]);
   }
 
   leaveOrder(String tableId, String orderId) async
   {
+    String resId = Provider.of<NetworkProvider>(NavigationService.navigatorKey.currentContext as BuildContext, listen: false).resId ?? "";
     print("signalRService leaving order" + tableId.toString());
-    await connection.invokeAsync('LeaveGroup', ["order" + ResId + tableId + orderId]);
+    await connection.invokeAsync('LeaveGroup', ["order" + resId + tableId + orderId]);
   }
 
   setSignalrClientMethods() async{

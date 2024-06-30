@@ -32,50 +32,69 @@ import 'package:sticky_headers/sticky_headers.dart';
 
 
 class MainTableScreen extends StatefulWidget {
-  const MainTableScreen({super.key});
+  final bool isFromLogin;
+  const MainTableScreen({super.key, required this.isFromLogin});
 
   @override
   State<MainTableScreen> createState() => _MainTableScreenState();
 }
 
-class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAliveClientMixin<MainTableScreen>, SingleTickerProviderStateMixin  {
+class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAliveClientMixin<MainTableScreen>, TickerProviderStateMixin   {
   final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
   GlobalKey<LiquidPullToRefreshState>();
-  late AnimationController _animationController;
-  Timer? timer;
-  Timer? timer2;
+  //late AnimationController _animationController;
+  // Timer? timer;
+  // Timer? timer2;
+
+  late TabController _tabController;
+  List<String> cats = [];
 
   @override
   void dispose() {
     print("on disposing");
-    timer?.cancel();
-    timer = null;
-    _animationController.dispose();
-    timer2?.cancel();
+    _tabController.dispose();
+    // timer?.cancel();
+    // timer = null;
+    // _animationController.dispose();
+    // timer2?.cancel();
     super.dispose();
   }
 
   @override
   void initState() {
+    _tabController = TabController(length: this.cats.length, vsync: this);
+
     print("signalRService oninit state");
-    _animationController =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 500), )..repeat();
-    Provider.of<TablesProvider>(context, listen: false).GetAllTables(context, false);
-    _animationController.forward();
-    _animationController.addListener(() {
-      if (_animationController.isCompleted) {
-        _animationController.reverse();
-      }
-      if(_animationController.isDismissed){
-        _animationController.forward();
-      }
-    });
+    // _animationController =
+    //     AnimationController(vsync: this, duration: Duration(milliseconds: 500), )..repeat();
+    // _animationController.forward();
+    // _animationController.addListener(() {
+    //   if (_animationController.isCompleted) {
+    //     _animationController.reverse();
+    //   }
+    //   if(_animationController.isDismissed){
+    //     _animationController.forward();
+    //   }
+    // });
+    initialCalls();
     super.initState();
   }
 
+  initialCalls() async {
+    await Provider.of<NetworkProvider>(context, listen: false).fetchFromSharedPreference();
+    await Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
+    await Provider.of<TablesProvider>(context, listen: false).GetAllTables(context, true);
+    setState(() {
+      this.cats = Provider.of<TablesProvider>(context, listen: false).categories;
+      _tabController = TabController(length: this.cats.length, vsync: this);
+      Provider.of<TablesProvider>(context, listen: false).onTabChanged(this.cats[0]);
+    });
+
+  }
+
   Future<void> _handleRefresh({bool isSignal = false, required SignalRService signal}) async {
-      signal.initializeConnection(context);
       Provider.of<TablesProvider>(context, listen: false).GetAllTables(context, true);
+      signal.initializeConnection(context);
   }
 
   @override
@@ -131,125 +150,106 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     });
   }
 
-  simpleGridAll(TablesProvider tab){
-      return (((tab.tableMaster?.length) ?? 0) > 0) ? GroupedListView.grid(
-        cacheExtent: 100,
-        addAutomaticKeepAlives: true,
-        items: tab.tableMaster,
-        headerBuilder: (context, String? isEven) {
-          return Text(isEven ?? "");
-        },
-        gridItemBuilder:
-            (context, int countInGroup, int itemIndexInGroup, TableMaster item, _) =>
-                Stack(
-                  children: [
-                    Card(
-                      color: getColor(item),
-                      child: allTextContent(item),
-                    ),
-                    (item.requestingOtp ?? 0) > 0 ? Align(
-                      alignment: Alignment.topCenter,
-                      child: badges.Badge(
-                        showBadge: false,
-                        child: Container(
-                            margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                            child: RotationTransition(
-                              turns: Tween(begin: 0.0, end: -.1).chain(CurveTween(curve: Curves.elasticIn)).animate(_animationController),
-                              child: const Icon(Icons.notifications_active, color: Colors.pink),
-                            )
 
-// Icon(Icons.notifications_active, color: Colors.pink),
+
+  buildTables2(signal) {
+    var count = 0;
+    return Column(
+      children: [
+        // const SizedBox(height: 12,),
+        segmentedControl(),
+        Consumer<SliderProvider>(builder: (context, tab, child) {
+          return tab.selectedVal == 2 ?  Container(
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+            child: TabBar(
+              isScrollable: true,
+              onTap: (int val){
+                print("on tap");
+                print(val);
+                Provider.of<TablesProvider>(context, listen: false).onTabChanged(this.cats[val]);
+              },
+              controller: _tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+
+              indicator: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  color: Colors.green
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.black54,
+              tabs: List.generate(
+                this.cats.length,
+                    (index) => Tab(
+                  child: Row(
+                    children: [
+                      Text("${this.cats[index]}", overflow: TextOverflow.ellipsis,),
+                      count > 0 ? Container(
+                        margin: const EdgeInsets.only(left: 0),
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            shape: BoxShape.circle
                         ),
-                      ),
-                    ) : Container(),
+                        child: Center(
+                          child: Text(
+                            count > 9 ? "9+" : count.toString(),
+                            style: TextStyle(color: Colors.black54, fontSize: 10),
+                          ),
+                        ),
+                      ): Container()
 
-                  ],
+                    ],
+                  ),
                 ),
-        itemGrouper: (TableMaster i) => i.tableCategory,
-        crossAxisCount: getItemCountPerRow(context),
-
-      ) : Container();
-  }
-
-  simpleGridAssigned(TablesProvider tab){
-    return (((tab.assignedTableMaster.length) ?? 0) > 0) ? GroupedListView.grid(
-      cacheExtent: 100,
-      addAutomaticKeepAlives: true,
-      items: tab.assignedTableMaster,
-      headerBuilder: (context, String? isEven) {
-        return Text(isEven ?? "");
-      },
-      gridItemBuilder:
-          (context, int countInGroup, int itemIndexInGroup, TableMaster item, _) =>
-              Stack(
-                children: [
-                  Card(
-                    color: getColor(item),
-                    child: allTextContent(item),
-                  ),
-                  (item.requestingOtp ?? 0) > 0 ? Align(
-                    alignment: Alignment.topCenter,
-                    child: badges.Badge(
-                      showBadge: false,
-                      child: Container(
-                          margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                          child: RotationTransition(
-                            turns: Tween(begin: 0.0, end: -.1).chain(CurveTween(curve: Curves.elasticIn)).animate(_animationController),
-                            child: const Icon(Icons.notifications_active, color: Colors.pink),
-                          )
-
-// Icon(Icons.notifications_active, color: Colors.pink),
-                      ),
-                    ),
-                  ) : Container(),
-
-                ],
               ),
-      itemGrouper: (TableMaster i) => i.tableCategory,
-      crossAxisCount: getItemCountPerRow(context),
+            ),
+          ) : SizedBox(height: 0, width: 0,);
+        }),
 
-    ) : Container();
+        const SizedBox(height: 12,),
+        Expanded(
+          child: Consumer<TablesProvider>(builder: (context, tab, child) {
+            print("on refresh");
+            return Stack(
+              children: [
+                Visibility(
+                  child: loadAllContent(tab, signal),
+                  visible: tab.selectedVal == 2,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                ),
+                Visibility(
+                  child: loadAssignedContent(tab),
+                  visible: tab.selectedVal == 1,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                ),
+                Visibility(
+                  child: loadReqContent(tab),
+                  visible: tab.selectedVal == 3,
+                  maintainSize: true,
+                  maintainAnimation: true,
+                  maintainState: true,
+                ),
+              ],
+            );
+
+
+          }),
+        ),
+      ],
+    );
   }
 
-  simpleGridReq(TablesProvider tab){
-    return (((tab.reqTables.length) ?? 0) > 0) ? GroupedListView.grid(
-      items: tab.reqTables,
-      cacheExtent: 100,
-      addAutomaticKeepAlives: true,
-      headerBuilder: (context, String? isEven) {
-        return Text(isEven ?? "");
-      },
-      gridItemBuilder:
-          (context, int countInGroup, int itemIndexInGroup, TableMaster item, _) =>
-              Stack(
-                children: [
-                  Card(
-                    color: getColor(item),
-                    child: allTextContent(item),
-                  ),
-                  (item.requestingOtp ?? 0) > 0 ? Align(
-                    alignment: Alignment.topCenter,
-                    child: badges.Badge(
-                      showBadge: false,
-                      child: Container(
-                          margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                          child: RotationTransition(
-                            turns: Tween(begin: 0.0, end: -.1).chain(CurveTween(curve: Curves.elasticIn)).animate(_animationController),
-                            child: const Icon(Icons.notifications_active, color: Colors.pink),
-                          )
 
-// Icon(Icons.notifications_active, color: Colors.pink),
-                      ),
-                    ),
-                  ) : Container(),
 
-                ],
-              ),
-      itemGrouper: (TableMaster i) => i.tableCategory,
-      crossAxisCount: getItemCountPerRow(context),
-
-    ) : Container();
-  }
 
   int getItemCountPerRow(BuildContext context) {
     double minTileWidth = 120;
@@ -303,11 +303,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
                   showBadge: false,
                   child: Container(
                       margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                      child: RotationTransition(
-                        turns: Tween(begin: 0.0, end: -.1).chain(CurveTween(curve: Curves.elasticIn)).animate(_animationController),
-                        child: const Icon(Icons.notifications_active, color: Colors.pink),
-                      )
-
+                      child: const Icon(Icons.notifications_active, color: Colors.pink),
 // Icon(Icons.notifications_active, color: Colors.pink),
                   ),
                 ),
@@ -348,29 +344,13 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
             ],
           ),
           (table?.noOfPeople ?? 0) > 0 ? Text("${table?.noOfPeople ?? 0} members", style: TextStyle(fontSize: 12),) : Container(),
-          (table?.duration) != null ? Text(table?.duration.toString() ?? "", style: const TextStyle( fontSize: 14),) : Container(),
+          // (table?.duration) != null ? Text(table?.duration.toString() ?? "", style: const TextStyle( fontSize: 14),) : Container(),
           (table?.totalBill ?? 0) > 0 ? Text("${table?.totalBill.toString() ?? ""} Rs", style: const TextStyle( fontSize: 14, fontWeight: FontWeight.bold),) : Container()
         ],
       ),
     );
   }
 
-  loadMainContent(TablesProvider tab) {
-    return (tab.finalTableMaster?.length ?? 0) > 0 ? ListView.builder(
-        padding: const EdgeInsets.fromLTRB(8,0,8,12),
-        itemCount: tab.categories.length,
-        //physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemBuilder: (BuildContext context, int index){
-          var cat = tab.categories[index];
-          List<TableMaster>? table1 = tab.finalTableMaster?.where((element) => element.tableCategory == cat).toList();
-          print("on refresh 22");
-          return StickyHeader(
-            header: Text(cat),
-            content: loadGridContent(table1!, context),
-          );
-        }) : Container();
-  }
 
   loadAssignedContent(TablesProvider tab) {
     return (tab.assignedTableMaster?.length ?? 0) > 0 ? ListView.builder(
@@ -389,19 +369,48 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   }
 
   loadAllContent(TablesProvider tab, signal) {
-    return (tab.tableMaster?.length ?? 0) > 0 ? ListView.builder(
-        padding: const EdgeInsets.fromLTRB(8,0,8,12),
-        itemCount: tab.categories.length,
-        //physics: const NeverScrollableScrollPhysics(),
+    print(tab.filterTableMaster?.length);
+    return (tab.filterTableMaster?.length ?? 0) > 0 ?
+    GridView.builder(
+        cacheExtent: 100,
+        // physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        itemBuilder: (BuildContext context, int index){
-          var cat = tab.categories[index];
-          List<TableMaster>? table1 = tab.tableMaster?.where((element) => element.tableCategory == cat).toList();
-          return StickyHeader(
-            header: Text(cat),
-            content: loadGridContent(table1!, context),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: getItemCountPerRow(context),
+//childAspectRatio: (3 / 2),
+        ),
+        itemCount: tab.filterTableMaster?.length,
+        itemBuilder: (BuildContext context, int index) {
+          var table = tab.filterTableMaster[index];
+          return Stack(
+            children: [
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                    return TableDetailScreen(tableMaster: table,);
+                  }));
+                },
+                child: Card(
+                  color: getColor(table),
+                  child: allTextContent(table),
+                ),
+              ),
+              (table.requestingOtp ?? 0) > 0 ? Align(
+                alignment: Alignment.topCenter,
+                child: badges.Badge(
+                  showBadge: false,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                    child: const Icon(Icons.notifications_active, color: Colors.pink),
+// Icon(Icons.notifications_active, color: Colors.pink),
+                  ),
+                ),
+              ) : Container(),
+
+            ],
           );
-        }) : Container();
+        })
+        : Container();
   }
 
   loadReqContent(TablesProvider tab) {
@@ -451,165 +460,21 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         duration: Duration(milliseconds: 0),
         curve: Curves.easeInToLinear,
         onValueChanged: (v) async {
-          //slide.onValueChanged(v);
-          timer2 = Timer(const Duration(milliseconds: 2), () => Provider.of<TablesProvider>(context, listen: false).onValueChanged(v));
+          slide.onValueChanged(v);
+          //timer2 = Timer(const Duration(milliseconds: 2), () => Provider.of<TablesProvider>(context, listen: false).onValueChanged(v));
           //timer.cancel();
-          //Provider.of<TablesProvider>(context, listen: false).onValueChanged(v);
+          Provider.of<TablesProvider>(context, listen: false).onValueChanged(v);
 
         },
       );
     });
   }
 
-  // buildTables() {
-  //   return Column(
-  //     children: [
-  //       const SizedBox(height: 12,),
-  //       segmentedControl(),
-  //       const SizedBox(height: 12,),
-  //       Expanded(
-  //         child: Consumer<TablesProvider>(builder: (context, tab, child) {
-  //           if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-  //             //timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-  //           }
-  //           print("on refresh");
-  //           if(tab.selectedVal == 1){
-  //             return loadAssignedContent(tab);
-  //           }
-  //           if(tab.selectedVal == 2){
-  //             return loadAllContent(tab);
-  //           }
-  //           return loadReqContent(tab);
-  //
-  //
-  //         }),
-  //       ),
-  //     ],
-  //   );
-  // }
-
-  buildTables2(signal) {
-    return Column(
-      children: [
-        const SizedBox(height: 12,),
-        segmentedControl(),
-        const SizedBox(height: 12,),
-        Expanded(
-          child: Consumer<TablesProvider>(builder: (context, tab, child) {
-            if(((tab.tableMaster?.length ?? 0) > 0) && timer == null){
-              print("inside Timerrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
-              timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-            }
-            print("on refresh");
-            return Stack(
-              children: [
-                Visibility(
-                    child: loadAllContent(tab, signal),
-                  visible: tab.selectedVal == 2,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                  child: loadAssignedContent(tab),
-                  visible: tab.selectedVal == 1,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                  child: loadReqContent(tab),
-                  visible: tab.selectedVal == 3,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-              ],
-            );
 
 
-          }),
-        ),
-      ],
-    );
-  }
 
-  // buildTables3() {
-  //   return Column(
-  //     children: [
-  //       const SizedBox(height: 12,),
-  //       segmentedControl(),
-  //       const SizedBox(height: 12,),
-  //       Expanded(
-  //         child: Consumer<TablesProvider>(builder: (context, tab, child) {
-  //           if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-  //             timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-  //           }
-  //           print("on refresh");
-  //           return Stack(
-  //             children: [
-  //               Visibility(
-  //                 child: simpleGridAssigned(tab),
-  //                 visible: tab.selectedVal == 1,
-  //                 maintainSize: true,
-  //                 maintainAnimation: true,
-  //                 maintainState: true,
-  //               ),
-  //               Visibility(
-  //                 child: simpleGridAll(tab),
-  //                 visible: tab.selectedVal == 2,
-  //                 maintainSize: true,
-  //                 maintainAnimation: true,
-  //                 maintainState: true,
-  //               ),
-  //               Visibility(
-  //                 child: simpleGridReq(tab),
-  //                 visible: tab.selectedVal == 3,
-  //                 maintainSize: true,
-  //                 maintainAnimation: true,
-  //                 maintainState: true,
-  //               ),
-  //             ],
-  //           );
-  //
-  //
-  //         }),
-  //       ),
-  //     ],
-  //   );
-  // }
 
-  // loadTabView() {
-  //   return DefaultTabController(
-  //     length: 3,
-  //     child: Scaffold(
-  //       appBar: AppBar(
-  //         bottom: const TabBar(
-  //           tabs: [
-  //             Tab(icon: Icon(Icons.directions_car)),
-  //             Tab(icon: Icon(Icons.directions_transit)),
-  //             Tab(icon: Icon(Icons.directions_bike)),
-  //           ],
-  //         ),
-  //         title: const Text('Tabs Demo'),
-  //       ),
-  //       body: Consumer<TablesProvider>(builder: (context, tab, child) {
-  //         if(((tab.finalTableMaster?.length ?? 0) > 0) && timer == null){
-  //           //timer = Timer.periodic(const Duration(seconds: 60), (Timer t) => tab.calculateDuration(true));
-  //         }
-  //         return TabBarView(
-  //           children: [
-  //             loadAssignedContent(tab),
-  //             loadAllContent(tab),
-  //             Icon(Icons.directions_bike),
-  //           ],
-  //         );
-  //
-  //
-  //       }),
-  //     ),
-  //   );
-  // }
+
 
   @override
   bool get wantKeepAlive => true;
@@ -621,26 +486,3 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
 
 
 
-//----------------------------------------------------------------------------------
-// DefaultTabController(
-// length: 3,
-// child: Scaffold(
-// appBar: AppBar(
-// bottom: const TabBar(
-// tabs: [
-// Tab(icon: Icon(Icons.directions_car)),
-// Tab(icon: Icon(Icons.directions_transit)),
-// Tab(icon: Icon(Icons.directions_bike)),
-// ],
-// ),
-// title: const Text('Tabs Demo'),
-// ),
-// body: const TabBarView(
-// children: [
-// Icon(Icons.directions_car),
-// Icon(Icons.directions_transit),
-// Icon(Icons.directions_bike),
-// ],
-// ),
-// ),
-// ),

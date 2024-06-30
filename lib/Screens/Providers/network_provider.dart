@@ -27,6 +27,8 @@ class NetworkProvider with ChangeNotifier{
   String? phone;
   String? resId;
   String? role;
+  String? resUniqLogin;
+  String? userIdLogin;
 
   final ApiBaseHelper _helper = ApiBaseHelper();
 
@@ -34,9 +36,9 @@ class NetworkProvider with ChangeNotifier{
     fetchFromSharedPreference();
   }
 
-  Future<Users?> UserLogin(BuildContext context, String name, String password) async {
+  Future<Users?> UserLogin(BuildContext context, String name, String password, String id) async {
     try{
-      final response = await _helper.post("login/auth", Auth(name, password, "sidduhotel").toJson(), context);
+      final response = await _helper.post("login/auth", Auth(name, password, id).toJson(), context);
       print("network Model");
       if(response != null){
         _users = Users.fromJson(response);
@@ -54,6 +56,12 @@ class NetworkProvider with ChangeNotifier{
   fetchFromSharedPreference()async{
     prefs = await SharedPreferences.getInstance();
     String userValues = prefs?.getString(loginUser) ?? "";
+    print("the tokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn 2222");
+    String resUniqL = prefs?.getString("resUniq") ?? "";
+    String userIdL = prefs?.getString("UserName") ?? "";
+
+    resUniqLogin = resUniqL;
+    userIdLogin = userIdL;
     if(userValues != ""){
       print(userValues);
       Users user = Users.fromJson(jsonDecode(userValues));
@@ -66,6 +74,7 @@ class NetworkProvider with ChangeNotifier{
   saveToSharedPreference() async {
     prefs = await SharedPreferences.getInstance();
     prefs?.setString(loginUser, jsonEncode(_users?.toJson()));
+
     setToken(_users?.token);
   }
 
@@ -115,10 +124,15 @@ class NetworkProvider with ChangeNotifier{
     if (token != null) {
       Map<String, dynamic> jCur = parseJwt(token ?? "");
       resUniq = jCur['ResUniq'];
+      resUniqLogin = jCur['ResUniq'];
+      userIdLogin = jCur['UserName'];
+      print("userIdLogin:::::::::::::::::::::::::::::" + (userIdLogin ?? ""));
       id = jCur['Id'];
       phone = jCur['Phone'];
       resId = jCur['ResId'];
       role = jCur['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      prefs?.setString("resUniq", (resUniq ?? ""));
+      prefs?.setString("UserName", (userIdLogin ?? ""));
     }
   }
 

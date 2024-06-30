@@ -25,6 +25,13 @@ class TablesProvider with ChangeNotifier{
 
   List<TableMaster> get tableMaster => _tableMaster;
 
+  List<TableMaster> _filterTableMaster = [];
+
+  List<TableMaster> get filterTableMaster => _filterTableMaster;
+
+  String _selectedTab = "";
+  String get selectedTab => _selectedTab;
+
   List<TableMaster> _reqTables = [];
 
   List<TableMaster> get reqTables => _reqTables;
@@ -71,12 +78,26 @@ class TablesProvider with ChangeNotifier{
     }
 
   }
+
+  onTabChanged(String val){
+    _selectedTab = val;
+    print(val);
+    _filterTableMaster = [];
+    _filterTableMaster = _tableMaster.where((element) => element.tableCategory == val).toSet().toList();
+    print(_filterTableMaster.length);
+    notifyListeners();
+  }
   
   performGetTables(BuildContext context) async {
     final response = await _helper.get("table/tablemaster", context);
-    print("network Model" + response.toString());
+    print("network Model2323" + response.toString());
     if(response != null){
       _tableMaster = List<TableMaster>.from(response.map((model)=> TableMaster.fromJson(model)));
+
+      _filterTableMaster = List<TableMaster>.from(response.map((model)=> TableMaster.fromJson(model)));
+      if(_selectedTab != ""){
+        _filterTableMaster = _tableMaster.where((element) => element.tableCategory == _selectedTab).toSet().toList();
+      }
       calculateDuration(false);
       String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
       _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();

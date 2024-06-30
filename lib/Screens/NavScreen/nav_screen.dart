@@ -15,7 +15,7 @@ class _NavScreenState extends State<NavScreen> {
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   final List<Widget> _widgetOptions = <Widget>[
-    const MainTableScreen(),
+    const MainTableScreen(isFromLogin: false),
     const Text("sf"),
     // StudentProfile(),
   ];

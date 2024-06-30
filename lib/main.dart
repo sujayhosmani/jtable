@@ -15,15 +15,19 @@ import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AuthService appAuth = new AuthService();
   Widget _defaultHome = new MainLogin();
 
+  // final prefs = await SharedPreferences.getInstance();
+  // prefs.setString("userValues", "");
   bool _result = await appAuth.login();
   if (_result) {
-    _defaultHome = new MainLogin();
+    _defaultHome = new MainTableScreen(isFromLogin: true,);
   }
   runApp(MyApp(home: _defaultHome,));
 }
@@ -38,13 +42,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => GlobalProvider()),
         ChangeNotifierProvider(create: (context) => NetworkProvider()),
-        ChangeNotifierProvider(create: (context) => TablesProvider()),
         ChangeNotifierProvider(create: (context) => LoggedInProvider()),
+        ChangeNotifierProvider(create: (context) => GlobalProvider()),
+        ChangeNotifierProvider(create: (context) => SignalRService()),
+        ChangeNotifierProvider(create: (context) => TablesProvider()),
         ChangeNotifierProvider(create: (context) => OrdersProvider()),
         ChangeNotifierProvider(create: (context) => MenuProvider()),
-        ChangeNotifierProvider(create: (context) => SignalRService()),
         ChangeNotifierProvider(create: (context) => SliderProvider()),
         ChangeNotifierProvider(create: (context) => FooterProvider()),
       ],

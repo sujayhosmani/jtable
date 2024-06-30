@@ -18,7 +18,7 @@ class _PersistStyleNavBarState extends State<PersistStyleNavBar> {
 
   List<Widget> _buildScreens() => [
 
-    const MainTableScreen(),
+    const MainTableScreen(isFromLogin: false),
     Text("rr"),
     StudentProfile(),
   ];
