@@ -10,6 +10,7 @@ import 'package:jtable/Helpers/auth_service.dart';
 import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Auth.dart';
 import 'package:jtable/Models/Orders.dart';
+import 'package:jtable/Models/OrdersPost.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
 import 'package:jtable/Network/ApiBaseHelper.dart';
@@ -179,7 +180,25 @@ class OrdersProvider with ChangeNotifier{
   }
 
 
-  UpdateOrder(List<Orders>? order, BuildContext context, String orderId, String tableNo) async {
+  UpdateOrderPost(List<OrdersPost>? order, BuildContext context, String orderId, String tableNo) async {
+    try{
+      print(tableNo);
+      final response = await _helper.post("orders/orders", order,  context);
+      if(response != null){
+        // _orders = order;
+        // fillOtherOrders(order, order);
+        // notifyListeners();
+        Provider.of<MenuProvider>(context, listen: false).resetItems();
+        await GetOrdersByOrderId(context, orderId, tableNo);
+      }
+
+
+    }catch(e){
+      return null;
+    }
+  }
+
+  UpdateOrderNormal(List<Orders>? order, BuildContext context, String orderId, String tableNo) async {
     try{
       print(tableNo);
       final response = await _helper.post("orders/orders", order,  context);

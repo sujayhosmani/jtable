@@ -141,7 +141,7 @@ class ItemList extends StatelessWidget {
     }
     List<Orders> orders = [];
     orders.add(order);
-    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
+    Provider.of<OrdersProvider>(context, listen: false).UpdateOrderNormal(orders, context, order.ordersId ?? "", order.tableNo ?? "");
   }
 
 

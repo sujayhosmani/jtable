@@ -47,7 +47,8 @@ class Orders {
        this.resUniq,
        this.loggedInStatus,
        this.groupId,
-       this.restaurentId
+       this.restaurentId,
+        this.guidId
   });
 
   Orders.fromJson(dynamic json) {
@@ -101,6 +102,7 @@ class Orders {
     restaurentId = json['restaurentId'];
     groupId = json['groupId'];
     resUniq = json['resUniq'];
+    guidId = json['guidId'];
 
   }
   String? itemId;
@@ -152,6 +154,7 @@ class Orders {
   bool? isAccepted;
   bool? isRunning = false;
   bool? isCancelled;
+  String? guidId;
 
 
 
@@ -208,6 +211,7 @@ class Orders {
     map['groupId'] = groupId;
     map['resUniq'] = resUniq;
     map['restaurentId'] = restaurentId;
+    map['guidId'] = guidId;
     return map;
   }
 

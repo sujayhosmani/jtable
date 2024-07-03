@@ -47,6 +47,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   // Timer? timer2;
 
   late TabController _tabController;
+  late TabController _tabController2;
   List<String> cats = [];
 
   @override
@@ -63,6 +64,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   @override
   void initState() {
     _tabController = TabController(length: this.cats.length, vsync: this);
+    _tabController2 = TabController(length: 4, vsync: this);
 
     print("signalRService oninit state");
     // _animationController =
@@ -109,7 +111,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
-                  signal.connectionIsOpen ?
                   Row(
                     children: [
                       IconButton(
@@ -118,16 +119,9 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
                           _handleRefresh(signal: signal)
                         },
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.person, color: Colors.black,),
-                        onPressed: () => {
-                          Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                            return SettingsScreen();
-                          }))
-                        },
-                      ),
+                      !signal.connectionIsOpen ? ElevatedButton(onPressed: () => _handleRefresh(signal: signal, isSignal: true), child: Text("Retry now!")):SizedBox(height: 0, width: 0,) ,
                     ],
-                  ) : ElevatedButton(onPressed: () => _handleRefresh(signal: signal, isSignal: true), child: Text("Retry now!")),
+                  )
                 ],
               ),
             )
@@ -146,6 +140,49 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
             })
           ],
         ),
+        bottomNavigationBar: Consumer<SliderProvider>(builder: (context, slide, child){
+          return Container(
+              color: Color(0xFF3F5AA6),
+              child: TabBar(
+                onTap: (v){
+                  int val = v + 1;
+                  if(val <= 3){
+
+                  }
+                  slide.onValueChanged(val);
+                  //timer2 = Timer(const Duration(milliseconds: 2), () => Provider.of<TablesProvider>(context, listen: false).onValueChanged(v));
+                  //timer.cancel();
+                  Provider.of<TablesProvider>(context, listen: false).onValueChanged(val);
+
+                },
+                controller: _tabController2,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                indicatorSize: TabBarIndicatorSize.tab,
+
+                indicatorPadding: EdgeInsets.all(0),
+                indicatorColor: Colors.blue,
+                tabs: [
+                  Tab(
+                    text: "Assigned",
+                    icon: Icon(Icons.euro_symbol, size: 20),
+                  ),
+                  Tab(
+                    text: "All Tables",
+                    icon: Icon(Icons.assignment, size: 20),
+                  ),
+                  Tab(
+                    text: "Requesting",
+                    icon: Icon(Icons.account_balance_wallet, size: 20),
+                  ),
+                  Tab(
+                    text: "Options",
+                    icon: Icon(Icons.settings, size: 20),
+                  ),
+                ],
+              )
+          );
+        })
       );
     });
   }
@@ -157,61 +194,10 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     return Column(
       children: [
         // const SizedBox(height: 12,),
-        segmentedControl(),
-        Consumer<SliderProvider>(builder: (context, tab, child) {
-          return tab.selectedVal == 2 ?  Container(
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.green.shade100,
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            child: TabBar(
-              isScrollable: true,
-              onTap: (int val){
-                print("on tap");
-                print(val);
-                Provider.of<TablesProvider>(context, listen: false).onTabChanged(this.cats[val]);
-              },
-              controller: _tabController,
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
+        //segmentedControl(),
 
-              indicator: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: Colors.green
-              ),
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.black54,
-              tabs: List.generate(
-                this.cats.length,
-                    (index) => Tab(
-                  child: Row(
-                    children: [
-                      Text("${this.cats[index]}", overflow: TextOverflow.ellipsis,),
-                      count > 0 ? Container(
-                        margin: const EdgeInsets.only(left: 0),
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            shape: BoxShape.circle
-                        ),
-                        child: Center(
-                          child: Text(
-                            count > 9 ? "9+" : count.toString(),
-                            style: TextStyle(color: Colors.black54, fontSize: 10),
-                          ),
-                        ),
-                      ): Container()
 
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ) : SizedBox(height: 0, width: 0,);
-        }),
 
-        const SizedBox(height: 12,),
         Expanded(
           child: Consumer<TablesProvider>(builder: (context, tab, child) {
             print("on refresh");
@@ -238,6 +224,10 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
                   maintainAnimation: true,
                   maintainState: true,
                 ),
+                Visibility(
+                    child: SettingsScreen(),
+                  visible: tab.selectedVal == 4,
+                )
               ],
             );
 
@@ -345,7 +335,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
           ),
           (table?.noOfPeople ?? 0) > 0 ? Text("${table?.noOfPeople ?? 0} members", style: TextStyle(fontSize: 12),) : Container(),
           // (table?.duration) != null ? Text(table?.duration.toString() ?? "", style: const TextStyle( fontSize: 14),) : Container(),
-          (table?.totalBill ?? 0) > 0 ? Text("${table?.totalBill.toString() ?? ""} Rs", style: const TextStyle( fontSize: 14, fontWeight: FontWeight.bold),) : Container()
+          (table?.joinOTP) != null ? Text("${table?.joinOTP.toString() ?? ""}", style: const TextStyle( fontSize: 14, fontWeight: FontWeight.bold),) : Container()
         ],
       ),
     );
@@ -371,45 +361,85 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   loadAllContent(TablesProvider tab, signal) {
     print(tab.filterTableMaster?.length);
     return (tab.filterTableMaster?.length ?? 0) > 0 ?
-    GridView.builder(
-        cacheExtent: 100,
-        // physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: getItemCountPerRow(context),
-//childAspectRatio: (3 / 2),
-        ),
-        itemCount: tab.filterTableMaster?.length,
-        itemBuilder: (BuildContext context, int index) {
-          var table = tab.filterTableMaster[index];
-          return Stack(
-            children: [
-              InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                    return TableDetailScreen(tableMaster: table,);
-                  }));
-                },
-                child: Card(
-                  color: getColor(table),
-                  child: allTextContent(table),
+    Column(
+      children: [
+        Container(
+          height: 45,
+          decoration: BoxDecoration(
+            color: Color(0x303F5AA6),
+            // borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          child: TabBar(
+            isScrollable: true,
+            onTap: (int val){
+              print("on tap");
+              print(val);
+              Provider.of<TablesProvider>(context, listen: false).onTabChanged(this.cats[val]);
+            },
+            controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerColor: Colors.transparent,
+
+            indicator: BoxDecoration(
+              // borderRadius: BorderRadius.all(Radius.circular(10)),
+                color: Color(0xFF3F5AA6)
+            ),
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.black87,
+            tabs: List.generate(
+              this.cats.length,
+                  (index) => Tab(
+                child: Row(
+                  children: [
+                    Text("${this.cats[index]}", overflow: TextOverflow.ellipsis,),
+                  ],
                 ),
               ),
-              (table.requestingOtp ?? 0) > 0 ? Align(
-                alignment: Alignment.topCenter,
-                child: badges.Badge(
-                  showBadge: false,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                    child: const Icon(Icons.notifications_active, color: Colors.pink),
-// Icon(Icons.notifications_active, color: Colors.pink),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12,),
+        GridView.builder(
+            cacheExtent: 100,
+            // physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: getItemCountPerRow(context),
+//childAspectRatio: (3 / 2),
+            ),
+            itemCount: tab.filterTableMaster?.length,
+            itemBuilder: (BuildContext context, int index) {
+              var table = tab.filterTableMaster[index];
+              return Stack(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                        return TableDetailScreen(tableMaster: table,);
+                      }));
+                    },
+                    child: Card(
+                      color: getColor(table),
+                      child: allTextContent(table),
+                    ),
                   ),
-                ),
-              ) : Container(),
+                  (table.requestingOtp ?? 0) > 0 ? Align(
+                    alignment: Alignment.topCenter,
+                    child: badges.Badge(
+                      showBadge: false,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                        child: const Icon(Icons.notifications_active, color: Colors.pink),
+// Icon(Icons.notifications_active, color: Colors.pink),
+                      ),
+                    ),
+                  ) : Container(),
 
-            ],
-          );
-        })
+                ],
+              );
+            }),
+      ],
+    )
         : Container();
   }
 

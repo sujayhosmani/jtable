@@ -120,6 +120,7 @@ class _SwitchTableDialogState extends State<SwitchTableDialog> {
 
       await Provider.of<TablesProvider>(context, listen: false).SwitchTable(widget.currentTable, dropdownValue, context);
       Navigator.pop(context);
+      Navigator.pop(context);
     }
   }
 }

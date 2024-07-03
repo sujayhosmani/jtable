@@ -77,9 +77,11 @@ class LoggedInProvider with ChangeNotifier{
 
   }
 
-  Future<bool?> InsertLoggedIN(LoggedInUsersPost? loggedIn, BuildContext context) async{
+  Future<bool?> InsertLoggedIN(LoggedInUsersPost loggedIn, BuildContext context) async{
     try{
       final response = await _helper.post("login/loggedInUser", loggedIn?.toJson(),  context);
+      print("-----------------------------------------------------------------------------------");
+      print(response);
       if(response != null){
         return true;
       }

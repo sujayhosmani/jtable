@@ -193,11 +193,19 @@ class TablesProvider with ChangeNotifier{
       _reqTables = _tableMaster.where((element) => (element.requestingOtp ?? 0) > 0).toList();
       print(_tableMaster.length);
 
-      Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(table, context);
+      if(_filterTableMaster.length > 0 && _selectedTab != ""){
+        _filterTableMaster = _tableMaster.where((element) => element.tableCategory == _selectedTab).toSet().toList();
+      }
 
+      Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(table, context);
+      print("updateFromSignalR 6");
       loadCategories();
       notifyListeners();
+      print("updateFromSignalR 7");
+      print(_tableMaster[index].pending);
+      print("updateFromSignalR 7++");
     }catch(e){
+      print("updateFromSignalR 8 exception");
       print(e.toString());
     }
 

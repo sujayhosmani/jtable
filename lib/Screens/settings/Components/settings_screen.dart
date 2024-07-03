@@ -46,9 +46,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text("Settings"),
-      ),
       body: loadSettings()
     );
   }
@@ -271,7 +268,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Expanded(
             child: Column(
               children: [
-                SizedBox(height: 12,),
                 Container(
                   color: Colors.white,
                   child: Padding(
@@ -319,9 +315,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             )
         ),
-        Container(
-            width: double.infinity,
-            child: ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("Go to Home")))
+        // Container(
+        //     width: double.infinity,
+        //     child: ElevatedButton(onPressed: () => Navigator.pop(context), child: Text("Go to Home")))
 
       ],
     );

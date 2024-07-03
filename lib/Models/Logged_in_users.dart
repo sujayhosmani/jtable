@@ -51,7 +51,7 @@ class LoggedInUsers {
     isFirst = json['isFirst'];
     id = json['id'];
     code = json['code'];
-    createdDateTime = json['createdDateTime'];
+    createdDateTime = DateTime.parse(json['createdDateTime']);
     updatedDateTime = json['updatedDateTime'];
     isActive = json['isActive'];
     createdBy = json['createdBy'];
@@ -85,7 +85,7 @@ class LoggedInUsers {
   bool? isFirst;
   String? id;
   int? code;
-  String? createdDateTime;
+  DateTime? createdDateTime;
   String? updatedDateTime;
   bool? isActive;
   String? createdBy;

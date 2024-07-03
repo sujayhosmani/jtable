@@ -12,6 +12,7 @@ import 'package:jtable/Models/CategoriesMaster.dart';
 import 'package:jtable/Models/Items.dart';
 import 'package:jtable/Models/MenuItems.dart';
 import 'package:jtable/Models/Orders.dart';
+import 'package:jtable/Models/OrdersPost.dart';
 import 'package:jtable/Models/SubCategories.dart';
 import 'package:jtable/Models/SubCategory.dart';
 import 'package:jtable/Models/Table_master.dart';
@@ -35,8 +36,8 @@ class MenuProvider with ChangeNotifier{
 
   String selectedTableNo = "";
 
-  List<Orders> _cartItems = [];
-  List<Orders> get cartItems => _cartItems;
+  List<OrdersPost> _cartItems = [];
+  List<OrdersPost> get cartItems => _cartItems;
 
   String _selectedCatId = "999";
   String get selectedCatId => _selectedCatId;
@@ -190,9 +191,9 @@ class MenuProvider with ChangeNotifier{
     filteredMenuItem.forEach((subCats) {
       List<Items>? allItems = subCats.items?.toList();
       subCats.items = [];
-      List<Items>? allVegItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'non veg') && (e.preference?.toLowerCase() != 'egg'))).toList();
-      List<Items>? allEggItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'veg') && (e.preference?.toLowerCase() != 'non veg'))).toList();
-      List<Items>? allNonVegItems = allItems?.where((e) => e.preference?.toLowerCase() != 'veg').toList();
+      List<Items>? allVegItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'non veg') && (e.preference?.toLowerCase() != 'egg') && (e.preference?.toLowerCase() != 'drink'))).toList();
+      List<Items>? allEggItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'veg') && (e.preference?.toLowerCase() != 'non veg') && (e.preference?.toLowerCase() != 'drink'))).toList();
+      List<Items>? allNonVegItems = allItems?.where((e) => (e.preference?.toLowerCase() != 'veg') && (e.preference?.toLowerCase() != 'drink')).toList();
       print("veg: $allVegItems");
       print("egg: $allEggItems");
       print("non veg: $allNonVegItems");
@@ -275,7 +276,7 @@ class MenuProvider with ChangeNotifier{
   }
 
   onAddFirstCartItem(Items item){
-      Orders cartItemAdd = Orders(
+      OrdersPost cartItemAdd = OrdersPost(
           description: item.description,
           discount: 0,
           preference: item.preference,
@@ -332,7 +333,7 @@ class MenuProvider with ChangeNotifier{
 
 
   onAddFirstVarCartItem(Items item, String varName){
-    Orders cartItemAdd = Orders(
+    OrdersPost cartItemAdd = OrdersPost(
         description: item.description,
         discount: 0,
         preference: item.preference,
@@ -536,7 +537,7 @@ class MenuProvider with ChangeNotifier{
     }
   }
 
-  void onCartItemScreen({required bool isFromVar, required Orders cartItem, required bool isAdd, bool? isRemove}) {
+  void onCartItemScreen({required bool isFromVar, required OrdersPost cartItem, required bool isAdd, bool? isRemove}) {
     int? foundCart;
     if (isFromVar) {
       foundCart = _cartItems.indexWhere((e) => (e.itemId == cartItem.itemId) && (e.varName == cartItem.varName));

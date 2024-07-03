@@ -17,17 +17,18 @@ class LoggedInUsersPost {
     this.status,
     this.isFirst,
     this.id,
-    this.code,
-    this.createdDateTime,
-    this.updatedDateTime,
-    this.isActive,
-    this.createdBy,
+    // this.code,
+    // this.createdDateTime,
+    // this.updatedDateTime,
+    // this.isActive,
+    // this.createdBy,
     this.insertedBy,
     this.noOfPeople,
     this.token,
 
     this.resUniq,
-    this.updatedBy,});
+    // this.updatedBy,
+  });
 
   LoggedInUsersPost.fromJson(dynamic json) {
     name = json['name'];
@@ -45,13 +46,13 @@ class LoggedInUsersPost {
     status = json['status'];
     isFirst = json['isFirst'];
     id = json['id'];
-    code = json['code'];
-    createdDateTime = json['createdDateTime'];
-    updatedDateTime = json['updatedDateTime'];
-    isActive = json['isActive'];
-    createdBy = json['createdBy'];
-    updatedBy = json['updatedBy'];
-
+    // code = json['code'];
+    // createdDateTime = json['createdDateTime'];
+    // updatedDateTime = json['updatedDateTime'];
+    // isActive = json['isActive'];
+    // createdBy = json['createdBy'];
+    // updatedBy = json['updatedBy'];
+    //
     insertedBy = json['insertedBy'];
     noOfPeople = json['noOfPeople'];
     token = json['token'];
@@ -74,12 +75,12 @@ class LoggedInUsersPost {
   String? status;
   bool? isFirst;
   String? id;
-  int? code;
-  String? createdDateTime;
-  String? updatedDateTime;
-  bool? isActive;
-  String? createdBy;
-  String? updatedBy;
+  // int? code;
+  // String? createdDateTime;
+  // String? updatedDateTime;
+  // bool? isActive;
+  // String? createdBy;
+  // String? updatedBy;
   String? insertedBy;
   String? token;
   int? noOfPeople;
@@ -103,12 +104,12 @@ class LoggedInUsersPost {
     map['status'] = status;
     map['isFirst'] = isFirst;
     map['id'] = id;
-    map['code'] = code;
-    map['createdDateTime'] = createdDateTime;
-    map['updatedDateTime'] = updatedDateTime;
-    map['isActive'] = isActive;
-    map['createdBy'] = createdBy;
-    map['updatedBy'] = updatedBy;
+    // map['code'] = code;
+    // map['createdDateTime'] = createdDateTime;
+    // map['updatedDateTime'] = updatedDateTime;
+    // map['isActive'] = isActive;
+    // map['createdBy'] = createdBy;
+    // map['updatedBy'] = updatedBy;
 
     map['insertedBy'] = insertedBy;
     map['noOfPeople'] = noOfPeople;

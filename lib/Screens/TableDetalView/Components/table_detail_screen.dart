@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/Utils.dart';
 import 'package:jtable/Helpers/signalR_services.dart';
+import 'package:jtable/Models/OrdersPost.dart';
 import 'package:jtable/Models/LoggedInUserPost.dart';
 import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Orders.dart';
@@ -160,7 +161,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                   },
                 ),
                 orders.currentTable?.isOccupied ?? false ? Text("otp: ${orders.currentTable?.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),): Container(),
-                orders.currentTable?.isOccupied ?? false ? addItemAction() : Container()
+                orders.currentTable?.isOccupied ?? false ? addItemAction() : Container(),
+                orders.currentTable?.isOccupied ?? false ?   SizedBox(height: 0, width: 0,) : addViewOTPAction(orders)
               ],
               );
           })
@@ -180,7 +182,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                 return (orders.currentTable?.isOccupied ?? false) ? Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    buildPrimaryTopBar(slide.selectedVal),
+                    buildPrimaryTopBar(slide.selectedVal, orders),
                     buildTabBar(slide, orders),
                     buildTabBarView(slide, orders),
                     //buildOtherViews(slide.selectedVal),
@@ -188,7 +190,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                       return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
                     })
                   ],
-                ) : fillUserDetails(orders);
+                ) : fillUserDetails2(orders);
               }),
               Consumer<GlobalProvider>(builder: (context, global, child) {
                 print(global.error);
@@ -206,7 +208,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
 
   }
 
-  buildPrimaryTopBar(selectedVal){
+  buildPrimaryTopBar(selectedVal, OrdersProvider orders){
   return Container(
     decoration: BoxDecoration(
       border: Border.all(color: Colors.grey.shade300, width: 1),
@@ -218,7 +220,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
         buildTopWidgets("Table", 1, selectedVal, context),
         buildTopWidgets("Cart", 2, selectedVal, context),
         buildTopWidgets("Orders", 3, selectedVal, context),
-        buildTopWidgets("Bill", 4, selectedVal, context),
+        ((orders.orders?.length ?? 0) > 0) ?  buildTopWidgets("Bill", 4, selectedVal, context) : SizedBox(height: 0, width: 0,),
       ],
     ),
   );
@@ -423,6 +425,37 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     );
   }
 
+  addViewOTPAction(OrdersProvider orders) {
+    return Consumer<LoggedInProvider>(builder: (context, loggedIn, child){
+      int len = loggedIn.notificationLoggedInUserForTable?.length ?? 0;
+      Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
+       return (len > 0) ? Padding(
+          padding: const EdgeInsets.only(top: 5),
+          // child: IconButton(onPressed: ()=>print("sdg"), icon: Icon(Icons.add_circle_rounded),),
+          child: ElevatedButton(onPressed: () async {
+            List<LoggedInUsers>? loggedInUsers = loggedIn.notificationLoggedInUserForTable;//await Provider.of<LoggedInProvider>(context, listen: false).GetAllNotifications(context, finalTable2.id ?? "");
+            print("here");
+            print(loggedInUsers?.length ?? 0);
+            if(loggedInUsers != null && (loggedInUsers.length ?? 0) > 0){
+              loggedInUsers.sort((a,b) => b.createdDateTime!.compareTo(a.createdDateTime!));
+              onAccepted(loggedInUsers.first, orders);
+            }
+          }, child: (orders.currentTable?.joinOTP == null || user?.id != orders.currentTable?.assignedStaffId)
+              ? Text("View OTP", style: TextStyle(color: Colors.white),)
+              : (orders.currentTable?.joinOTP != null && user?.id == orders.currentTable?.assignedStaffId)
+              ? Text(orders.currentTable?.joinOTP ?? "NA", style: TextStyle(color: Colors.white))
+              : Text("NA", style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                )
+            ),
+          )
+      ): Container();
+    });
+  }
+
   buildSecondaryTopBar(int selectedVal, int secVal) {
     switch(selectedVal){
       case 3: return buildSecondaryOrdersView(secVal);
@@ -539,8 +572,8 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     );
   }
 
-  buildCartItems(BuildContext context, Orders? cartItem) {
-    Orders? foods = cartItem; //.items;
+  buildCartItems(BuildContext context, OrdersPost? cartItem) {
+    OrdersPost? foods = cartItem; //.items;
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
       decoration: BoxDecoration(
@@ -675,7 +708,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
         element.status = "completed";
       };
     });
-    Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, orders?[0].ordersId ?? "", orders?[0].tableNo ?? "");
+    Provider.of<OrdersProvider>(context, listen: false).UpdateOrderNormal(orders, context, orders?[0].ordersId ?? "", orders?[0].tableNo ?? "");
   }
 
 
@@ -711,19 +744,19 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
             ListView.builder(
               itemCount: menu.cartItems.length,
                 itemBuilder: (BuildContext context, int index){
-                Orders? ord = menu.cartItems?[index];
+                OrdersPost? ord = menu.cartItems?[index];
                 return buildCartItems(context, ord);
             });
         });
       }
-      case 4: return BillDetailViewScreen(tableMaster: orders.currentTable!, orderDetails: (orders.orders?.length ?? 0) > 0 ? orders.orders : null);
+      case 4: return ((orders.orders?.length ?? 0) > 0) ? BillDetailViewScreen(tableMaster: orders.currentTable!, orderDetails: (orders.orders?.length ?? 0) > 0 ? orders.orders : null) : SizedBox(height: 0, width: 0,);
       default: return Container();
     }
   }
 
   onConfirmCart(OrdersProvider orders) async {
     Users? loggedInUser = Provider.of<NetworkProvider>(context, listen: false).users;
-    List<Orders> cartItems = Provider.of<MenuProvider>(context, listen: false).cartItems;
+    List<OrdersPost> cartItems = Provider.of<MenuProvider>(context, listen: false).cartItems;
     cartItems.forEach((data) {
       data.addedById = orders.currentTable?.occupiedById;
       data.tableNo = orders.currentTable?.tableNo;
@@ -738,12 +771,142 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
       data.isAccepted = false;
       data.isCancelled = false;
     });
+
+    // List<OrdersPost> confirmCartItems = [];
+    // cartItems.forEach((data) {
+    //   OrdersPost order = OrdersPost(
+    //     id: data.id,
+    //     addedById: data.addedById,
+    //     addedByName: data.addedByName,
+    //     addedByPh: data.addedByPh,
+    //     assignedId: data.assignedId,
+    //     assignedName: data.assignedName,
+    //     assignedPh: data.assignedPh,
+    //     cancelledById: data.cancelledById,
+    //     cancelledByName: data.cancelledByName,
+    //     description: data.description,
+    //     discount: data.discount,
+    //     insertedBy: data.insertedBy,
+    //     insertedById: data.insertedById,
+    //     insertedByName: data.insertedByName,
+    //     insertedByPh: data.insertedByPh,
+    //     instructions: data.instructions,
+    //     isAccepted: data.isAccepted,
+    //     isCancelled: data.isCancelled,
+    //     isRunning: data.isRunning,
+    //     isVeriation: data.isVeriation,
+    //     itemId: data.itemId,
+    //     itemImage: data.itemImage,
+    //     itemName: data.itemName,
+    //     loggedInStatus: data.loggedInStatus,
+    //     orderIdInt: data.loggedInStatus,
+    //     orderNo: data.orderNo,
+    //     ordersId: data.ordersId,
+    //     preference: data.preference,
+    //     price: data.price,
+    //     quantity: data.quantity,
+    //     remarks: data.remarks,
+    //     status: data.status,
+    //     tableId: data.tableId,
+    //     tableNo: data.tableNo,
+    //     varId: data.varId,
+    //     varName: data.varName,
+    //   );
+    // });
+
     print(orders.currentTable);
     log(json.encode(cartItems));
     print("--------------------------------------------------------------------------------------------------");
     print(orders.currentTable?.occupiedById);
-     Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(cartItems, context, orders.currentTable?.occupiedById ?? "", orders.currentTable?.tableNo ?? "");
+     Provider.of<OrdersProvider>(context, listen: false).UpdateOrderPost(cartItems, context, orders.currentTable?.occupiedById ?? "", orders.currentTable?.tableNo ?? "");
 
+  }
+
+  fillUserDetails2(OrdersProvider orders){
+    return Container(
+      child: Column(
+        children: [
+          Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    SizedBox(height: 8,),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(child: Text("Enter the user details", style: TextStyle(fontSize: 18, ),)),
+                    ),
+                    SizedBox(height: 6,),
+                    InputText(isPassword: false,title: "Username",icon: Icons.person, mCtrl: mUserName),
+                    SizedBox(height: 15,),
+                    InputText(isPassword: false,title: "Phone number",icon: Icons.phone, mCtrl: mPhoneNumber),
+                    SizedBox(height: 15,),
+                    InputText(isPassword: false,title: "No of people",icon: Icons.group, mCtrl: mNoOfPeople),
+                    SizedBox(height: 15,),
+                    // Container(
+                    //   width: double.infinity,
+                    //   decoration: BoxDecoration(
+                    //       borderRadius: BorderRadius.circular(50),
+                    //       gradient: Utils.btnGradient
+                    //   ),
+                    //   margin: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
+                    //   child: TextButton(
+                    //     style: TextButton.styleFrom(
+                    //         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    //         padding: EdgeInsets.symmetric(vertical: 15),
+                    //         shape: RoundedRectangleBorder(
+                    //             borderRadius: BorderRadius.circular(60)
+                    //         )
+                    //     ),
+                    //
+                    //     child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                    //     onPressed: () { onUserSubmit(orders); },
+                    //   ),
+                    // ),
+                  ],
+                ),
+              )
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                flex: 1,
+                child: Container(
+                  width: double.infinity,
+                  child: ElevatedButton(onPressed: () async => await onTableClear(orders), child: Text("Clear all logins", style: TextStyle(color: Colors.white),), style:
+                  ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero
+                      ),
+                      backgroundColor: Colors.black87,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                  )),
+                ),
+              ),
+              Flexible(
+                flex: 1,
+                child:  Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                      gradient: Utils.btnGradient
+                  ),
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                    ),
+
+                    child: new Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                    onPressed: () { onUserSubmit(orders); },
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
   }
 
   fillUserDetails(OrdersProvider orders) {
@@ -1020,6 +1183,10 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
 
   onAccepted(LoggedInUsers? loggedIn, OrdersProvider orders) async {
     print("on accepting");
+    print("on accepting");
+    print("on accepting");
+    print("on accepting");
+    print(loggedIn?.name);
     Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
     // loggedIn?.ordersId = loggedIn.id;
     // loggedIn?.otpByName = user?.name;
@@ -1036,7 +1203,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
     table?.occupiedById = loggedIn?.id;
     table?.occupiedName = loggedIn?.name;
     table?.occupiedPh = loggedIn?.phone;
-    table?.from = "otp";
+    table?.from = "otp2";
     // correct
     await Provider.of<TablesProvider>(context, listen: false)
         .UpdateTable(table, context);

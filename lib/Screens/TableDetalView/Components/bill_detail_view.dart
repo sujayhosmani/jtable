@@ -48,7 +48,8 @@ class _BillDetailViewScreenState extends State<BillDetailViewScreen>
                         orderDetails = (orders.orders?.length ?? 0) > 0 ? orders.orders : null;
                         Orders? order = (orders.orders?.length ?? 0) > 0 ? orders.orders?.first : null;
                         Orders? orderLast = (orders.orders?.length ?? 0) > 0 ? orders.orders?.last : null;
-                        DateTime billDateTime = DateTime.parse((orderLast?.updatedDateTime ?? orderLast?.createdDateTime) ?? "");
+                        print(orderLast?.createdDateTime);
+                        DateTime billDateTime = DateTime.parse(( orderLast?.createdDateTime) ?? "");
                         String billDate ="${billDateTime.day.toString().padLeft(2,'0')}/${billDateTime.month.toString().padLeft(2,'0')}/${billDateTime.year.toString()}";
                         String billTime ="${billDateTime.hour.toString().padLeft(2,'0')}:${billDateTime.minute.toString().padLeft(2,'0')}";
                         return Container(

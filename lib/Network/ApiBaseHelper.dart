@@ -28,14 +28,18 @@ class ApiBaseHelper {
         token = Provider.of<NetworkProvider>(context, listen: false).users?.token ?? "qqq";
         print("the tokennnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn: " + token);
       }
-      print(token);
+      print(_baseUrl + url);
       var header = {HttpHeaders.contentTypeHeader: 'application/json', HttpHeaders.authorizationHeader: "Bearer $token" };
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(true, null) : print("context null");
       final response = await http.get(Uri.parse(_baseUrl + url), headers: header);
+      print("response: ");
+      print(response);
       print(response.body);
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(false, null): print("c null");
       responseJson = _returnResponse(response, context);
     }  catch(ex) {
+      print("exception");
+      print(ex.toString());
       context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(false, ex.toString() ?? ""): print("c null");
       throw FetchDataException('No Internet connection');
     }

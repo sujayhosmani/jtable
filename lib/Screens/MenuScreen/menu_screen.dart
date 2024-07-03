@@ -257,7 +257,7 @@ class _MenuScreenState extends State<MenuScreen>
                             fontSize: 17.0,
                             fontWeight: FontWeight.w600,
                           ),
-                          border: InputBorder.none,
+                          // border: InputBorder.none,
                         ),
                       ),
                     ),
@@ -466,29 +466,15 @@ Widget _menuListView(MenuProvider menu){
     itemCount: menu.filterSubListCategoriesz?.length,
     itemBuilder: (context, index){
       SubCategories? subCats = menu.filterSubListCategoriesz?[index];
-      return StickyHeader(
-          header: Container(
-              //key: GlobalObjectKey((subCats?.subCategoryId ?? "") + (subCats?.items?.first?.id ?? "")),
-            color: Colors.blue,
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(subCats?.subCategoryName ?? "", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600),),
-                  ),
-                ],
-              )
-          ),
-          content: ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: subCats?.items?.length,
-            itemBuilder: (context, index){
-              Items? item = subCats?.items?[index];
-              return FoodListView(foodsz: item);
-            },
-          )
+      return ListView.builder(
+        padding: const EdgeInsets.all(8.0),
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: subCats?.items?.length,
+        itemBuilder: (context, index){
+          Items? item = subCats?.items?[index];
+          return FoodListView(foodsz: item);
+        },
       );
     },
   );

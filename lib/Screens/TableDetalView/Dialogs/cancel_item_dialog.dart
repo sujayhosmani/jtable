@@ -115,7 +115,7 @@ class _CancelItemDialogState extends State<CancelItemDialog> {
     order.remarks = remark;
     List<Orders> orders = [];
     orders.add(order);
-    await Provider.of<OrdersProvider>(context, listen: false).UpdateOrder(orders, context, order.ordersId ?? "", order.tableNo ?? "");
+    await Provider.of<OrdersProvider>(context, listen: false).UpdateOrderNormal(orders, context, order.ordersId ?? "", order.tableNo ?? "");
     Navigator.pop(context);
   }
 }

@@ -48,6 +48,7 @@ class TableMaster {
   int? groupId;
   int? restaurentId;
   String? resUniq;
+  String? guidId;
   bool? isSmokingZone;
 
 
@@ -102,6 +103,7 @@ class TableMaster {
     this.isSmokingZone,
     this.groupId,
     this.restaurentId,
+    this.guidId,
       this.totalBill});
 
   TableMaster.fromJson(dynamic json) {
@@ -155,6 +157,7 @@ class TableMaster {
     groupId = json['groupId'];
     resUniq = json['resUniq'];
     isSmokingZone = json['isSmokingZone'];
+    guidId = json['guidId'];
 
   }
 
@@ -210,6 +213,7 @@ class TableMaster {
     map['resUniq'] = resUniq;
     map['restaurentId'] = restaurentId;
     map['isSmokingZone'] = isSmokingZone;
+    map['guidId'] = guidId;
 
     return map;
   }
