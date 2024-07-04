@@ -158,6 +158,10 @@ class TablesProvider with ChangeNotifier{
         }
         String? id = Provider.of<NetworkProvider>(context, listen: false).users?.id;
         _assignedTableMaster = _tableMaster.where((element) => element.assignedStaffId == id && element?.isOccupied == true).toList();
+
+        if(_selectedTab != ""){
+          _filterTableMaster = _tableMaster.where((element) => element.tableCategory == _selectedTab).toSet().toList();
+        }
         notifyListeners();
         return _tableMaster;
       }

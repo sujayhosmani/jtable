@@ -160,7 +160,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                     if(orders.currentTable?.isOccupied ?? false) {callTheMethod();}else{getLoggedInUsersOTP(context, finalTable2.id ?? "");}
                   },
                 ),
-                orders.currentTable?.isOccupied ?? false ? Text("otp: ${orders.currentTable?.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),): Container(),
+                // orders.currentTable?.isOccupied ?? false ? Text("otp: ${orders.currentTable?.joinOTP ?? ""}" ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),): Container(),
                 orders.currentTable?.isOccupied ?? false ? addItemAction() : Container(),
                 orders.currentTable?.isOccupied ?? false ?   SizedBox(height: 0, width: 0,) : addViewOTPAction(orders)
               ],

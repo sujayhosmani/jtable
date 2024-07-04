@@ -25,7 +25,7 @@ class _ClearChoiceDialogState extends State<ClearChoiceDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Clear Table", style: TextStyle(fontSize: 16),),
-                Text("please choode the reason", style: TextStyle(color: Colors.grey, fontSize: 14),)
+                Text("please choose the reason", style: TextStyle(color: Colors.grey, fontSize: 14),)
               ],
             ),
             content: Container(

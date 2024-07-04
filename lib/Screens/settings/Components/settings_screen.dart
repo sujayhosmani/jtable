@@ -19,9 +19,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // late PersistentTabController _controller;
   Map<Sky, Color> skyColors = <Sky, Color>{
-  Sky.midnight: const Color(0xff191970),
-  Sky.viridian: const Color(0xff40826d),
-  Sky.cerulean: const Color(0xff007ba7),
+    Sky.midnight: const Color(0xff191970),
+    Sky.viridian: const Color(0xff40826d),
+    Sky.cerulean: const Color(0xff007ba7),
   };
   Sky _selectedSegment = Sky.midnight;
 
@@ -39,8 +39,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: loadSettings()
+        backgroundColor: Colors.white,
+        body: loadSettings()
     );
   }
 
