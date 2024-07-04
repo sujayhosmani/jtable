@@ -9,8 +9,6 @@ import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:signalr_flutter/signalr_flutter.dart';
-// import 'package:signalr_netcore/signalr_client.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:signalr_pure/signalr_pure.dart';
 
