@@ -1,10 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:jtable/Helpers/Utils.dart';
 import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
-import 'package:jtable/Screens/HomeScreen/Widgets/headings_home.dart';
 import 'package:jtable/Screens/MenuScreen/menu_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';

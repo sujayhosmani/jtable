@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Users.dart';
-import 'package:jtable/Screens/NavScreen/persistance_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
-import 'package:jtable/Screens/StudentScreen/Components/student_screen.dart';
 import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../Helpers/Utils.dart';
-import '../NavScreen/nav_screen.dart';
 import '../shared/input.dart';
 
 class MainLogin extends StatelessWidget {

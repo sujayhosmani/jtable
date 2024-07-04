@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:custom_sliding_segmented_control/custom_sliding_segmented_control.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/Utils.dart';
@@ -8,26 +7,18 @@ import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Logged_in_users.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Models/Users.dart';
-import 'package:jtable/Screens/HomeScreen/Components/home_screen.dart';
-import 'package:jtable/Screens/HomeScreen/Widgets/headings_home.dart';
-import 'package:jtable/Screens/HomeScreen/Widgets/parent_detail.dart';
+
 import 'package:jtable/Screens/Providers/global_provider.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:jtable/Screens/Providers/logged_inProvider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
-import 'package:jtable/Screens/StudentScreen/Widgets/assigned_tables.dart';
-import 'package:jtable/Screens/StudentScreen/Widgets/rank_widget.dart';
 import 'package:jtable/Screens/TableDetalView/Components/table_detail_screen.dart';
-import 'package:jtable/Screens/TableScreens/Widgets/all_table.dart';
-import 'package:jtable/Screens/UserDetailScreen/user_detail_screen.dart';
 import 'package:jtable/Screens/ViewTableScreen/table_view_screen.dart';
 import 'package:jtable/Screens/settings/Components/settings_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_grouped_listview/simple_grouped_listview.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 
@@ -40,8 +31,8 @@ class MainTableScreen extends StatefulWidget {
 }
 
 class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAliveClientMixin<MainTableScreen>, TickerProviderStateMixin   {
-  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
-  GlobalKey<LiquidPullToRefreshState>();
+  // final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
+  // GlobalKey<LiquidPullToRefreshState>();
   //late AnimationController _animationController;
   // Timer? timer;
   // Timer? timer2;
@@ -459,46 +450,6 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         }) : Container();
   }
 
-  segmentedControl() {
-    return Consumer<SliderProvider>(builder: (context, slide, child) {
-      return CustomSlidingSegmentedControl<int>(
-        initialValue: 2,
-        children: const {
-          1: Text('Assigned Tab'),// style: TextStyle(fontWeight: slide.selectedVal == 1 ? FontWeight.w600 : FontWeight.w400),),
-          2: Text('All Tables'),// style: TextStyle(fontWeight: slide.selectedVal == 2 ? FontWeight.w600 : FontWeight.w400),),
-          3: Text('Requesting'),
-        },
-        decoration: BoxDecoration(
-          color: CupertinoColors.lightBackgroundGray,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        thumbDecoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(.3),
-              blurRadius: 4.0,
-              spreadRadius: 1.0,
-              offset: Offset(
-                0.0,
-                2.0,
-              ),
-            ),
-          ],
-        ),
-        duration: Duration(milliseconds: 0),
-        curve: Curves.easeInToLinear,
-        onValueChanged: (v) async {
-          slide.onValueChanged(v);
-          //timer2 = Timer(const Duration(milliseconds: 2), () => Provider.of<TablesProvider>(context, listen: false).onValueChanged(v));
-          //timer.cancel();
-          Provider.of<TablesProvider>(context, listen: false).onValueChanged(v);
-
-        },
-      );
-    });
-  }
 
 
 

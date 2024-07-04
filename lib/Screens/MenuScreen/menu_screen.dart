@@ -33,6 +33,7 @@ class _MenuScreenState extends State<MenuScreen>
 
   @override
   void initState() {
+
     _tabController = TabController(length: 2, vsync: this);
     super.initState();
     GetSubCategories();
@@ -351,7 +352,7 @@ class _MenuScreenState extends State<MenuScreen>
                   String itemId = "";
                   if((sub.subCategories?.length ?? 0) > 0){
                     id = sub.subCategories?.first?.subCategoryId ?? "999";
-                    itemId = sub.subCategories?.first?.items?.first.id ?? "";
+                    //itemId = sub.subCategories?.first?.items?.first.id ?? "";
                   }
                   Provider.of<MenuProvider>(context, listen: false).updateCatIdAndSubCatId(sub.id, id);
                   Navigator.pop(context);
@@ -367,33 +368,33 @@ class _MenuScreenState extends State<MenuScreen>
                       child: Text(sub.categoryName ?? "", style: TextStyle(color: Colors.white, fontWeight: selectedCatId == sub.id ? FontWeight.bold : FontWeight.w400, fontSize: selectedCatId == sub.id ? 18 : 16),),
                     ),
                     Divider(height: 0.5, thickness: 0.2),
-                    selectedCatId == sub.id ? ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: sub.subCategories?.length,
-                        itemBuilder: (BuildContext context, int index2){
-                          var subListCat = sub.subCategories?[index2];
-                          return (subListCat?.items?.length ?? 0) > 0 ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  Provider.of<MenuProvider>(context, listen: false).updateCatIdAndSubCatId(sub.id, subListCat?.subCategoryId);
-                                  Navigator.pop(context);
-                                  //Scrollable.ensureVisible(GlobalObjectKey((subListCat?.subCategoryId ?? "") + (subListCat?.items?.first.id ?? "")).currentContext ?? context);
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-                                  child: Text(subListCat?.subCategoryName ?? "", style: TextStyle(color: Colors.white, fontWeight: selectedSubCatId == subListCat?.subCategoryId ? FontWeight.bold : FontWeight.w400, fontSize: 14),),
-                                ),
-
-                              ),
-                              Divider(height: 0.5, thickness: 0.2),
-
-                            ],
-                          ) : Container();
-                        }
-                    ) : Container(),
+                    // selectedCatId == sub.id ? ListView.builder(
+                    //     physics: const NeverScrollableScrollPhysics(),
+                    //     shrinkWrap: true,
+                    //     itemCount: sub.subCategories?.length,
+                    //     itemBuilder: (BuildContext context, int index2){
+                    //       var subListCat = sub.subCategories?[index2];
+                    //       return (subListCat?.items?.length ?? 0) > 0 ? Column(
+                    //         crossAxisAlignment: CrossAxisAlignment.start,
+                    //         children: [
+                    //           InkWell(
+                    //             onTap: () {
+                    //               Provider.of<MenuProvider>(context, listen: false).updateCatIdAndSubCatId(sub.id, subListCat?.subCategoryId);
+                    //               Navigator.pop(context);
+                    //               //Scrollable.ensureVisible(GlobalObjectKey((subListCat?.subCategoryId ?? "") + (subListCat?.items?.first.id ?? "")).currentContext ?? context);
+                    //             },
+                    //             child: Padding(
+                    //               padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+                    //               child: Text(subListCat?.subCategoryName ?? "", style: TextStyle(color: Colors.white, fontWeight: selectedSubCatId == subListCat?.subCategoryId ? FontWeight.bold : FontWeight.w400, fontSize: 14),),
+                    //             ),
+                    //
+                    //           ),
+                    //           Divider(height: 0.5, thickness: 0.2),
+                    //
+                    //         ],
+                    //       ) : Container();
+                    //     }
+                    // ) : Container(),
                   ],
                 ),
               );
@@ -462,52 +463,22 @@ class _MenuScreenState extends State<MenuScreen>
 }
 
 Widget _menuListView(MenuProvider menu){
+  print("in for looooooooooooooooooooooooooooop");
+  print(menu.filterMenuList.length);
   return ListView.builder(
-    itemCount: menu.filterSubListCategoriesz?.length,
+    padding: const EdgeInsets.all(8.0),
+    // physics: const NeverScrollableScrollPhysics(),
+    shrinkWrap: true,
+    itemCount: menu.filterMenuList.length,
     itemBuilder: (context, index){
-      SubCategories? subCats = menu.filterSubListCategoriesz?[index];
-      return ListView.builder(
-        padding: const EdgeInsets.all(8.0),
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: subCats?.items?.length,
-        itemBuilder: (context, index){
-          Items? item = subCats?.items?[index];
-          return FoodListView(foodsz: item);
-        },
-      );
+      Items? item = menu.filterMenuList[index].items;
+      return FoodListView(foodsz: item);
     },
   );
 }
 
 
-Widget _menuListView2(MenuProvider menu){
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: ListView.builder(
-      itemCount: menu.filterSubListCategoriesz?.length,
-      itemBuilder: (context, index){
-        SubCategories? subCats = menu.filterSubListCategoriesz?[index];
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(subCats?.subCategoryName ?? ""),
-            ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: subCats?.items?.length,
-              itemBuilder: (context, index){
-                Items? item = subCats?.items?[index];
-                return FoodListView(foodsz: item);
-              },
-            ),
-          ],
-        );
-      },
-    ),
-  );
-}
+
 
 
 

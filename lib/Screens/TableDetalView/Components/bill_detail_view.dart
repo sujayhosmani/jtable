@@ -527,14 +527,14 @@ class _BillDetailViewScreenState extends State<BillDetailViewScreen>
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red,),),
+                      color: Colors.black87,),),
                 ),
                 Container(
                     child: Text((selectedTable.totalBill ?? 0).toString(),
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Colors.red),),
+                          color: Colors.black87),),
                     alignment: Alignment.centerLeft),
               ],
             ))

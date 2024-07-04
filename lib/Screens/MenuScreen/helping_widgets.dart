@@ -142,13 +142,11 @@ class FoodListView extends StatelessWidget {
           ),
           Expanded(
               child: Consumer<MenuProvider>(builder: (context, menu, child) {
-                menu.filterSubListCategoriesz.forEach((element) {
-                  var finalItem = element.items?.where((itemz) => itemz.id == foods?.id).toList();
+                  var finalItem = menu.filterMenuList?.where((itemz) => itemz.items?.id == foods?.id).toList();
                   if(finalItem != null && (finalItem?.length ?? 0) > 0){
-                    foods = finalItem?.first;
+                    foods = finalItem?.first.items;
                   }
 
-                });
                 return ListView.builder(
                     itemCount: foods?.variations?.length,
                     padding: const EdgeInsets.all(20),

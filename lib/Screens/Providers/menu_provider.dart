@@ -52,14 +52,15 @@ class MenuProvider with ChangeNotifier{
   List<SubCategory> get subCategories => _subCategories;
 
 
-  List<SubCategories> _subListCategoriesz = [];
-  List<SubCategories> get subListCategoriesz => _subListCategoriesz;
+  // List<SubCategories> _subListCategoriesz = [];
+  // List<SubCategories> get subListCategoriesz => _subListCategoriesz;
 
-  List<SubCategories> _filterSubListCategoriesz = [];
-  List<SubCategories> get filterSubListCategoriesz => _filterSubListCategoriesz;
 
   List<MenuItems> _menuItems = [];
   List<MenuItems> get menuItems => _menuItems;
+
+  List<MenuItems> _filterMenuList = [];
+  List<MenuItems> get filterMenuList => _filterMenuList;
 
 
   final ApiBaseHelper _helper = ApiBaseHelper();
@@ -87,15 +88,44 @@ class MenuProvider with ChangeNotifier{
 
   }
 
+  storeMenuItems(List<MenuItems> menuItems) async{
+    final prefs = await SharedPreferences.getInstance();
+    String vl = jsonEncode(menuItems);
+    prefs.setString("menuitems", vl);
+  }
+
+  getMenuItemsFromStorage()async{
+    final prefs = await SharedPreferences.getInstance();
+    String userValues = prefs?.getString("menuitems") ?? "";
+    print("menus from $userValues");
+    if(userValues == ""){
+      return null;
+    }
+
+    return List<MenuItems>.from(jsonDecode(userValues).map((model)=> MenuItems.fromJson(model)));
+
+  }
+
   Future<List<SubCategory>?> GetMenuItems(BuildContext context) async {
     try{
-      final response = await _helper.get("menu/menuitems", context);
-      print("network Model GetMenuItems" + response.toString());
-      if(response != null){
-        _menuItems = List<MenuItems>.from(response.map((model)=> MenuItems.fromJson(model)));
-        MergeAll();
+      List<MenuItems> fromStorage = await getMenuItemsFromStorage() ?? [];
+      print("menus from storage $fromStorage");
+      if(fromStorage.length > 0){
 
+        _menuItems = fromStorage;
+        MergeAll();
+      }else{
+        print("menus from network");
+        final response = await _helper.get("menu/menuitems", context);
+        print("network Model GetMenuItems" + response.toString());
+        if(response != null){
+          _menuItems = List<MenuItems>.from(response.map((model)=> MenuItems.fromJson(model)));
+          storeMenuItems(_menuItems);
+          MergeAll();
+
+        }
       }
+
 
     }catch(e){
       return null;
@@ -105,7 +135,6 @@ class MenuProvider with ChangeNotifier{
 
 
   MergeAll(){
-    _subListCategoriesz = [];
     _subCategories.forEach((mainSubCatz) {
       mainSubCatz.subCategories?.forEach((subCatz) {
         subCatz.items = [];
@@ -117,22 +146,37 @@ class MenuProvider with ChangeNotifier{
             if(it != null){
               finalItems.add(it);
             }
-
           });
           subCatz.items = finalItems;
           subCatz.catId = menuItemsz.first.categoryId;
-          _subListCategoriesz.add(subCatz);
           print("zzzzzzzzzzzzzzzzzz" + (subCatz?.items?.length ?? 0).toString());
         }
       });
     });
-    _filterSubListCategoriesz = getSubcategory();
+    _filterMenuList = getMenuItems();
+    _selectedCatId = "999";
+    _selectedSubCatId = "999";
+    values["veg"] = false;
+    values["non veg"] = false;
+    values["egg"] = false;
+    onSearch("", false);
+    print(values["non veg"]);
     onFiltersValuesChanged(values, false);
     return _subCategories;
   }
 
   onInitFirst(String tableNo){
-    _filterSubListCategoriesz = getSubcategory();
+    // _filterSubListCategoriesz = getSubcategory();
+    _selectedCatId = "999";
+    _selectedSubCatId = "999";
+    values["veg"] = false;
+    values["non veg"] = false;
+    values["egg"] = false;
+    onSearch("", false);
+    print(values["non veg"]);
+    onFiltersValuesChanged(values, false);
+
+    _filterMenuList = getMenuItems();
     if(selectedTableNo == ""){
       selectedTableNo = tableNo;
     }else if(selectedTableNo != tableNo){
@@ -140,7 +184,8 @@ class MenuProvider with ChangeNotifier{
       resetItems();
     }else{
       selectedTableNo = tableNo;
-      _filterSubListCategoriesz = getSubcategory();
+      _filterMenuList = getMenuItems();
+      // _filterSubListCategoriesz = getSubcategory();
       notifyListeners();
     }
 
@@ -161,9 +206,11 @@ class MenuProvider with ChangeNotifier{
     }else{
       if(!(values["veg"] ?? false) && !(values["egg"] ?? false) && !(values["non veg"] ?? false)){
         if(_selectedCatId == "999"){
-          _filterSubListCategoriesz = getSubcategory();
+          // _filterSubListCategoriesz = getSubcategory();
+          _filterMenuList = getMenuItems();
         }else{
-          _filterSubListCategoriesz = getSubcategory().where((element) => element.catId == _selectedCatId).toList();
+          // _filterSubListCategoriesz = getSubcategory().where((element) => element.catId == _selectedCatId).toList();
+          _filterMenuList = getMenuItems().where((element) => element.categoryId == _selectedCatId).toList();
         }
         notifyListeners();
         return;
@@ -171,9 +218,11 @@ class MenuProvider with ChangeNotifier{
 
       if((values["veg"] ?? false) && (values["egg"] ?? false) && (values["non veg"] ?? false)){
         if(_selectedCatId == "999"){
-          _filterSubListCategoriesz = getSubcategory();
+          _filterMenuList = getMenuItems();
+          // _filterSubListCategoriesz = getSubcategory();
         }else{
-          _filterSubListCategoriesz = getSubcategory().where((element) => element.catId == _selectedCatId).toList();
+          _filterMenuList = getMenuItems().where((element) => element.categoryId == _selectedCatId).toList();
+          // _filterSubListCategoriesz = getSubcategory().where((element) => element.catId == _selectedCatId).toList();
         }
         notifyListeners();
         return;
@@ -181,37 +230,37 @@ class MenuProvider with ChangeNotifier{
     }
 
 
-    List<SubCategories> filteredMenuItem = [];
+    List<MenuItems> filteredMenuItem = [];
+    List<MenuItems> filteredMenuItem2 = [];
     if(isFromSearch){
-      filteredMenuItem = List<SubCategories>.from(jsonDecode(jsonEncode(filterSubListCategoriesz.toList())).map((model)=> SubCategories.fromJson(model)));
+      filteredMenuItem = List<MenuItems>.from(jsonDecode(jsonEncode(_filterMenuList.toList())).map((model)=> MenuItems.fromJson(model)));
     }else{
-      filteredMenuItem = List<SubCategories>.from(jsonDecode(jsonEncode(filterSubListCategoriesz.toList())).map((model)=> SubCategories.fromJson(model)));
+      filteredMenuItem = List<MenuItems>.from(jsonDecode(jsonEncode(_filterMenuList.toList())).map((model)=> MenuItems.fromJson(model)));
     }
 
-    filteredMenuItem.forEach((subCats) {
-      List<Items>? allItems = subCats.items?.toList();
-      subCats.items = [];
-      List<Items>? allVegItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'non veg') && (e.preference?.toLowerCase() != 'egg') && (e.preference?.toLowerCase() != 'drink'))).toList();
-      List<Items>? allEggItems = allItems?.where((e) => ((e.preference?.toLowerCase() != 'veg') && (e.preference?.toLowerCase() != 'non veg') && (e.preference?.toLowerCase() != 'drink'))).toList();
-      List<Items>? allNonVegItems = allItems?.where((e) => (e.preference?.toLowerCase() != 'veg') && (e.preference?.toLowerCase() != 'drink')).toList();
-      print("veg: $allVegItems");
-      print("egg: $allEggItems");
-      print("non veg: $allNonVegItems");
-      print((values["veg"] ?? false));
-      if ((values["veg"] ?? false)) {
-        subCats.items = [...?allVegItems];
-      }
-      if ((values["egg"] ?? false)) {
-        subCats.items = [...?subCats.items, ...?allEggItems];
-      }
-      if ((values["non veg"] ?? false)) {
-        subCats.items = [...?subCats.items, ...?allNonVegItems];
-      }
-      subCats.items = [...Set.from(subCats.items ?? [])];
-      subCats.itemCount = subCats.items?.length ?? 0;
-    });
-    _filterSubListCategoriesz = filteredMenuItem.toList();
+    List<MenuItems>? allItems = filteredMenuItem;
+    List<MenuItems> allVegItems = allItems.where((e) => ((e.items?.preference?.toLowerCase() != 'non veg') && (e.items?.preference?.toLowerCase() != 'egg') && (e.items?.preference?.toLowerCase() != 'drink'))).toList();
+    List<MenuItems>? allEggItems = allItems?.where((e) => ((e.items?.preference?.toLowerCase() != 'veg') && (e.items?.preference?.toLowerCase() != 'non veg') && (e.items?.preference?.toLowerCase() != 'drink'))).toList();
+    List<MenuItems>? allNonVegItems = allItems?.where((e) => (e.items?.preference?.toLowerCase() != 'veg') && (e.items?.preference?.toLowerCase() != 'drink')).toList();
 
+
+
+    print((values["veg"] ?? false));
+    if ((values["veg"] ?? false)) {
+      print("veg: $allVegItems");
+      filteredMenuItem2 = [...allVegItems];
+    }
+    if ((values["egg"] ?? false)) {
+      print("egg: $allEggItems");
+      filteredMenuItem2 = [...filteredMenuItem2, ...?allEggItems];
+    }
+    if ((values["non veg"] ?? false)) {
+      print("non veg: $allNonVegItems");
+      filteredMenuItem2 = [...filteredMenuItem2, ...?allNonVegItems];
+      print("non veg filtered: $filteredMenuItem");
+    }
+    filteredMenuItem2 = [...Set.from(filteredMenuItem2 ?? [])];
+    _filterMenuList = filteredMenuItem2.toList();
 
     notifyListeners();
   }
@@ -220,35 +269,16 @@ class MenuProvider with ChangeNotifier{
 
   onSearch(String Val, bool isFromFilter){
     if(Val.isEmpty){
-      _filterSubListCategoriesz = getSubcategory();
+      // _filterSubListCategoriesz = getSubcategory();
+      _filterMenuList = getMenuItems();
+      onFiltersValuesChanged(values, true);
       notifyListeners();
       return;
     }
-    List<SubCategories> subCats = getSubcategory();
-
-
-    List<SubCategories> searchedFinalItems = [];
-    subCats.forEach((mainSub) {
-      SubCategories sub = SubCategories();
-      sub.subCategoryName = mainSub.subCategoryName;
-      sub.subCategoryId = mainSub.subCategoryId;
-      sub.catId = mainSub.catId;
-      sub.status = mainSub.status;
-      sub.discount = mainSub.discount;
-      sub.itemCount = mainSub.itemCount;
-      sub.maxQuantity = mainSub.maxQuantity;
-      sub.items = [];
-      mainSub.items?.forEach((mainItem) {
-        if(mainItem.itemName?.toLowerCase().contains(Val.toLowerCase()) ?? false){
-          sub.items?.add(mainItem);
-        }
-      });
-      if((sub.items?.length ?? 0) > 0){
-        searchedFinalItems.add(sub);
-      }
-
-    });
-    _filterSubListCategoriesz = searchedFinalItems.toList();
+    List<MenuItems> subMenuItems = getMenuItems();
+    List<MenuItems> searchedFinalItems = [];
+    searchedFinalItems = subMenuItems.where((mainItem) => (mainItem.items?.itemName?.toLowerCase().contains(Val.toLowerCase()) ?? false)).toList() ?? [];
+    _filterMenuList = searchedFinalItems.toList();
 
     _selectedCatId = "999";
     _selectedSubCatId = "999";
@@ -266,10 +296,11 @@ class MenuProvider with ChangeNotifier{
 
     print(_selectedSubCatId);
     if(_selectedCatId == "999"){
-      _filterSubListCategoriesz = getSubcategory();
+      // _filterSubListCategoriesz = getSubcategory();
+      _filterMenuList = getMenuItems();
     }else{
-      List<SubCategories> mainList = getSubcategory();
-      _filterSubListCategoriesz = mainList.where((element) => element.catId == _selectedCatId).toList();
+      // _filterSubListCategoriesz = mainList.where((element) => element.catId == _selectedCatId).toList();
+      _filterMenuList = getMenuItems().where((element) => element.categoryId == _selectedCatId).toList();
     }
 
     onFiltersValuesChanged(values, false);
@@ -288,11 +319,10 @@ class MenuProvider with ChangeNotifier{
           price: item.price
       );
       _cartItems?.add(cartItemAdd);
-      _filterSubListCategoriesz?.forEach((menuSubList) {
-        menuSubList.items?.forEach((menuItem) {
+        _filterMenuList.forEach((menuItem) {
           if(cartItemAdd.isVeriation ?? false){
-            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
-              menuItem?.variations?.forEach((ver) {
+            if(menuItem.items?.id != null && menuItem.items?.id == cartItemAdd.itemId){
+              menuItem.items?.variations?.forEach((ver) {
                 if(ver.name == cartItemAdd.varName){
                   ver.quantity = 1;
                 }
@@ -300,19 +330,16 @@ class MenuProvider with ChangeNotifier{
 
             }
           }else{
-            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
-              menuItem?.quantity = cartItemAdd.quantity;
+            if(menuItem.items?.id != null && menuItem.items?.id == cartItemAdd.itemId){
+              menuItem?.items?.quantity = cartItemAdd.quantity;
             }
           }
         });
 
-      });
-
-      _subListCategoriesz?.forEach((menuSubList) {
-        menuSubList.items?.forEach((menuItem) {
+        _menuItems?.forEach((menuItem) {
           if(cartItemAdd.isVeriation ?? false){
-            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
-              menuItem?.variations?.forEach((ver) {
+            if(menuItem.items?.id != null && menuItem.items?.id == cartItemAdd.itemId){
+              menuItem.items?.variations?.forEach((ver) {
                 if(ver.name == cartItemAdd.varName){
                   ver.quantity = 1;
                 }
@@ -320,13 +347,12 @@ class MenuProvider with ChangeNotifier{
 
             }
           }else{
-            if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
-              menuItem?.quantity = cartItemAdd.quantity;
+            if(menuItem.items?.id != null && menuItem.items?.id == cartItemAdd.itemId){
+              menuItem.items?.quantity = cartItemAdd.quantity;
             }
           }
         });
 
-      });
 
       notifyListeners();
   }
@@ -356,40 +382,36 @@ class MenuProvider with ChangeNotifier{
 
     _cartItems?.add(cartItemAdd);
 
-    _filterSubListCategoriesz?.forEach((menuSubList) {
-      menuSubList.items?.forEach((menuItem) {
+      _filterMenuList?.forEach((menuItem) {
 
         if(cartItemAdd.isVeriation ?? false){
-          if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+          if(menuItem.items?.id != null && menuItem.items?.id == cartItemAdd.itemId){
             int varCount = 0;
-            menuItem?.variations?.forEach((ver) {
+            menuItem?.items?.variations?.forEach((ver) {
               if(ver.name == cartItemAdd.varName){
                 ver.quantity = 1;
               }
               varCount = varCount + (ver.quantity ?? 0);
             });
-            menuItem.quantity = varCount;
+            menuItem.items?.quantity = varCount;
           }
         }
       });
-    });
 
-    _subListCategoriesz?.forEach((menuSubList) {
-      menuSubList.items?.forEach((menuItem) {
+      _menuItems?.forEach((menuItem) {
 
         if(cartItemAdd.isVeriation ?? false){
-          if(menuItem.id != null && menuItem.id == cartItemAdd.itemId){
+          if(menuItem.items?.id != null && menuItem.items?.id == cartItemAdd.itemId){
             int varCount = 0;
-            menuItem?.variations?.forEach((ver) {
+            menuItem.items?.variations?.forEach((ver) {
               if(ver.name == cartItemAdd.varName){
                 ver.quantity = 1;
               }
               varCount = varCount + (ver.quantity ?? 0);
             });
-            menuItem.quantity = varCount;
+            menuItem.items?.quantity = varCount;
           }
         }
-      });
     });
 
 
@@ -401,21 +423,17 @@ class MenuProvider with ChangeNotifier{
     int foundCart = _cartItems.indexWhere((cart) => cart.itemId == item.id);
     if (foundCart != -1) {
       _cartItems[foundCart].quantity = (_cartItems[foundCart]?.quantity ?? 0) + 1;
-      _filterSubListCategoriesz.forEach((element) {
-        element.items?.forEach((mItem) {
-          if(mItem.id == item.id){
-            mItem.quantity = _cartItems[foundCart].quantity;
+        _filterMenuList?.forEach((mItem) {
+          if(mItem.items?.id == item.id){
+            mItem.items?.quantity = _cartItems[foundCart].quantity;
           }
         });
-      });
 
-      _subListCategoriesz.forEach((element) {
-        element.items?.forEach((mItem) {
-          if(mItem.id == item.id){
-            mItem.quantity = _cartItems[foundCart].quantity;
+        _menuItems?.forEach((mItem) {
+          if(mItem.items?.id == item.id){
+            mItem.items?.quantity = _cartItems[foundCart].quantity;
           }
         });
-      });
 
       notifyListeners();
     }
@@ -426,35 +444,31 @@ class MenuProvider with ChangeNotifier{
     if (foundCart != -1) {
       _cartItems[foundCart].quantity = (_cartItems[foundCart]?.quantity ?? 0) + 1;
 
-      _filterSubListCategoriesz.forEach((element) {
-        element.items?.forEach((mItem) {
-          if(mItem.id == item.id){
+        _filterMenuList?.forEach((mItem) {
+          if(mItem.items?.id == item.id){
             int varCount = 0;
-            mItem.variations?.forEach((variation) {
+            mItem.items?.variations?.forEach((variation) {
                 if(variation.name == varName){
                    variation.quantity = (variation.quantity ?? 0) + 1;
                 }
                 varCount = varCount + (variation.quantity ?? 0);
             });
-            mItem.quantity = varCount;
+            mItem.items?.quantity = varCount;
           }
         });
-      });
 
-      _subListCategoriesz.forEach((element) {
-        element.items?.forEach((mItem) {
-          if(mItem.id == item.id){
+        _menuItems?.forEach((mItem) {
+          if(mItem.items?.id == item.id){
             int varCount = 0;
-            mItem.variations?.forEach((variation) {
+            mItem.items?.variations?.forEach((variation) {
               if(variation.name == varName){
                 variation.quantity = (variation.quantity ?? 0) + 1;
               }
               varCount = varCount + (variation.quantity ?? 0);
             });
-            mItem.quantity = varCount;
+            mItem.items?.quantity = varCount;
           }
         });
-      });
 
       notifyListeners();
     }
@@ -471,21 +485,17 @@ class MenuProvider with ChangeNotifier{
       }
 
       if (foundCart != -1) {
-        _filterSubListCategoriesz.forEach((element) {
-          element.items?.forEach((mItem) {
-            if(mItem.id == item.id){
-              mItem.quantity = quantity;
+          _filterMenuList?.forEach((mItem) {
+            if(mItem.items?.id == item.id){
+              mItem.items?.quantity = quantity;
             }
           });
-        });
 
-        _subListCategoriesz.forEach((element) {
-          element.items?.forEach((mItem) {
-            if(mItem.id == item.id){
-              mItem.quantity = quantity;
+          _menuItems.forEach((mItem) {
+            if(mItem.items?.id == item.id){
+              mItem.items?.quantity = quantity;
             }
           });
-        });
 
         notifyListeners();
       }
@@ -503,34 +513,30 @@ class MenuProvider with ChangeNotifier{
       }
 
       if (foundCart != -1) {
-        _filterSubListCategoriesz.forEach((element) {
-          element.items?.forEach((mItem) {
-            if(mItem.id == item.id){
+          _filterMenuList?.forEach((mItem) {
+            if(mItem.items?.id == item.id){
               int varCount = 0;
-              mItem.variations?.forEach((variation) {
+              mItem.items?.variations?.forEach((variation) {
                 if(variation.name == varName){
                   variation.quantity = quantity;
                 }
                 varCount = varCount + (variation.quantity ?? 0);
               });
-              mItem.quantity = varCount;
+              mItem.items?.quantity = varCount;
             }
           });
-        });
-        _subListCategoriesz.forEach((element) {
-          element.items?.forEach((mItem) {
-            if(mItem.id == item.id){
+          _menuItems?.forEach((mItem) {
+            if(mItem.items?.id == item.id){
               int varCount = 0;
-              mItem.variations?.forEach((variation) {
+              mItem.items?.variations?.forEach((variation) {
                 if(variation.name == varName){
                   variation.quantity = quantity;
                 }
                 varCount = varCount + (variation.quantity ?? 0);
               });
-              mItem.quantity = varCount;
+              mItem.items?.quantity = varCount;
             }
           });
-        });
 
         notifyListeners();
       }
@@ -558,49 +564,41 @@ class MenuProvider with ChangeNotifier{
 
 
       if (isFromVar) {
-        _subListCategoriesz.forEach((mList) {
-          mList.items?.forEach((mItem) {
-            if(mItem.id == cartItem.itemId){
+          _menuItems.forEach((mItem) {
+            if(mItem.items?.id == cartItem.itemId){
               int varCount = 0;
-              mItem.variations?.forEach((mVar) {
+              mItem.items?.variations?.forEach((mVar) {
                 if(mVar.name == cartItem.varName){
                     mVar.quantity = finalQuantity;
                 }
                 varCount = varCount + (mVar.quantity ?? 0);
               });
-              mItem.quantity = varCount;
+              mItem.items?.quantity = varCount;
             }
           });
-        });
-        _filterSubListCategoriesz.forEach((mList) {
-          mList.items?.forEach((mItem) {
-            if(mItem.id == cartItem.itemId){
+          _filterMenuList?.forEach((mItem) {
+            if(mItem.items?.id == cartItem.itemId){
               int varCount = 0;
-              mItem.variations?.forEach((mVar) {
+              mItem.items?.variations?.forEach((mVar) {
                 if(mVar.name == cartItem.varName){
                   mVar.quantity = finalQuantity;
                 }
                 varCount = varCount + (mVar.quantity ?? 0);
               });
-              mItem.quantity = varCount;
+              mItem.items?.quantity = varCount;
             }
           });
-        });
       } else {
-        _subListCategoriesz.forEach((mList) {
-          mList.items?.forEach((mItem) {
-            if(mItem.id == cartItem.itemId){
-              mItem.quantity = finalQuantity;
+          _menuItems?.forEach((mItem) {
+            if(mItem.items?.id == cartItem.itemId){
+              mItem.items?.quantity = finalQuantity;
             }
           });
-        });
-        _filterSubListCategoriesz.forEach((mList) {
-          mList.items?.forEach((mItem) {
-            if(mItem.id == cartItem.itemId){
-              mItem.quantity = finalQuantity;
+          _filterMenuList?.forEach((mItem) {
+            if(mItem.items?.id == cartItem.itemId){
+              mItem.items?.quantity = finalQuantity;
             }
           });
-        });
       }
 
       notifyListeners();
@@ -610,27 +608,27 @@ class MenuProvider with ChangeNotifier{
 
   void resetItems() {
     _cartItems = [];
-    _subListCategoriesz.forEach((element) {
-      element.items?.forEach((eItems) {
-        eItems.variations?.forEach((eVar) {
+    _selectedCatId = "999";
+    _selectedSubCatId = "999";
+      _menuItems?.forEach((eItems) {
+        eItems.items?.variations?.forEach((eVar) {
           eVar.quantity = 0;
         });
-          eItems.quantity = 0;
+          eItems.items?.quantity = 0;
       });
-    });
-    _filterSubListCategoriesz.forEach((element) {
-      element.items?.forEach((eItems) {
-        eItems.variations?.forEach((eVar) {
+      _filterMenuList?.forEach((eItems) {
+        eItems.items?.variations?.forEach((eVar) {
           eVar.quantity = 0;
         });
-        eItems.quantity = 0;
+        eItems.items?.quantity = 0;
       });
-    });
     notifyListeners();
   }
 
-  List<SubCategories> getSubcategory() {
-    return List<SubCategories>.from(jsonDecode(jsonEncode(subListCategoriesz.toList())).map((model)=> SubCategories.fromJson(model)));
+
+
+  List<MenuItems> getMenuItems(){
+    return List<MenuItems>.from(jsonDecode(jsonEncode(_menuItems.toList())).map((model)=> MenuItems.fromJson(model)));;
   }
 
 
