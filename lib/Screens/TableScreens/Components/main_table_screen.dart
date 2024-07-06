@@ -96,7 +96,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
       return Scaffold(
         appBar: AppBar(
           backgroundColor: signal.connectionIsOpen ? Colors.orangeAccent : Colors.redAccent,
-          title: Text("OttoMan"),
+          title: Text("digirestro"),
           actions: [
             Padding(
               padding: const EdgeInsets.all(8.0),

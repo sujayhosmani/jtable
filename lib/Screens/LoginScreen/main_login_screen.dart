@@ -6,7 +6,8 @@ import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
 import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:provider/provider.dart';
-
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import '../../Helpers/Utils.dart';
 import '../shared/input.dart';
 
@@ -51,7 +52,7 @@ class MainLogin extends StatelessWidget {
                       SizedBox(height: 8,),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Center(child: Text("OttoMan", style: TextStyle(fontSize: 18, ),)),
+                        child: Center(child: Text("digirestro", style: TextStyle(fontSize: 18, ),)),
                       ),
                       SizedBox(height: 10,),
                       Padding(
@@ -102,8 +103,14 @@ class MainLogin extends StatelessWidget {
     );
   }
 
+  String generateMd5(String input) {
+    return md5.convert(utf8.encode(input)).toString();
+  }
+
   void onLoginClicked(BuildContext context) async{
-    Users? res = await Provider.of<NetworkProvider>(context, listen: false).UserLogin(context, mUserName.text, mPassword.text, mResUniq.text);
+    final md5Hash = generateMd5(mPassword.text ?? "");
+    print(md5Hash);
+    Users? res = await Provider.of<NetworkProvider>(context, listen: false).UserLogin(context, mUserName.text, md5Hash, mResUniq.text);
     //context != null ? Provider.of<GlobalProvider>(context, listen: false).setIsBusy(false, null): print("c null");
     if(res != null){
       await Future.delayed(const Duration(seconds: 0));
