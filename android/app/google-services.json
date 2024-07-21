@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "537101613189",
+    "project_id": "jayrestro-pro",
+    "storage_bucket": "jayrestro-pro.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:537101613189:android:51fc1c0c3541cfa81411ec",
+        "android_client_info": {
+          "package_name": "com.jay.tech.jtable"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALTWroEXGMrpgl1N_n0VgmTfqgBiku2gY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

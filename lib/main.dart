@@ -1,5 +1,8 @@
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/auth_service.dart';
+import 'package:jtable/Helpers/firebase_api.dart';
 import 'package:jtable/Helpers/navigation_service.dart';
 import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Orders.dart';
@@ -12,12 +15,25 @@ import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
+import 'package:jtable/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+
+Future<void> handleBackgroundMessage(RemoteMessage message)async {
+  print("Handling a background message: ${message.messageId}");
+  print(message.notification?.title ?? "");
+  print(' body $message.notification?.body ?? ""');
+  print('data $message.data');
+
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseApi().initNotifications();
   AuthService appAuth = new AuthService();
   Widget _defaultHome = new MainLogin();
 
