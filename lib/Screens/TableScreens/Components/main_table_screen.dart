@@ -30,7 +30,7 @@ class MainTableScreen extends StatefulWidget {
   State<MainTableScreen> createState() => _MainTableScreenState();
 }
 
-class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAliveClientMixin<MainTableScreen>, TickerProviderStateMixin   {
+class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAliveClientMixin<MainTableScreen>, TickerProviderStateMixin, WidgetsBindingObserver  {
   // final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
   // GlobalKey<LiquidPullToRefreshState>();
   //late AnimationController _animationController;
@@ -52,8 +52,22 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
     super.dispose();
   }
 
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        initialCalls();
+        print('qqqqqqqqqqqqqqqqqqqqqqqq Back to app');
+        break;
+      case AppLifecycleState.paused:
+        print('qqqqqqqqqqqqqqqqqqqqqqqq App minimised or Screen locked');
+        break;
+      default:break;
+    }
+  }
+
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: this.cats.length, vsync: this);
     _tabController2 = TabController(length: 4, vsync: this);
 

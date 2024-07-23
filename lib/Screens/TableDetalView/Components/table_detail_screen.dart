@@ -39,7 +39,7 @@ class TableDetailScreen extends StatefulWidget {
   State<TableDetailScreen> createState() => _TableDetailScreenState();
 }
 
-class _TableDetailScreenState extends State<TableDetailScreen> with TickerProviderStateMixin  {
+class _TableDetailScreenState extends State<TableDetailScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
   late TableMaster finalTable2;
   late TabController _tabController;
   late TabController _tabController2;
@@ -51,12 +51,27 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     finalTable2 = widget.tableMaster;
     Provider.of<OrdersProvider>(context, listen: false).AddCurrentTable(widget.tableMaster);
     _tabController = new TabController(vsync: this, length: 4);
     _tabController2 = new TabController(vsync: this, length: 2);
     onInitialization();
   }
+
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        onInitialization();
+        print('qqqqqqqqqqqqqqqqqqqqqqqq Back to app222222222222222');
+        break;
+      case AppLifecycleState.paused:
+        print('qqqqqqqqqqqqqqqqqqqqqqqq App minimised or Screen locked2222222222222');
+        break;
+      default:break;
+    }
+  }
+
 
   onInitialization(){
     finalTable2 = Provider.of<OrdersProvider>(context, listen: false).currentTable!;
