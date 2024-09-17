@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:jtable/Helpers/auth_service.dart';
 import 'package:jtable/Models/Users.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
+import 'package:jtable/Screens/notificationSettings/components/notificationsettings_screen.dart';
 import 'package:provider/provider.dart';
 
 
@@ -304,6 +305,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Divider(height: 0.1, color: Colors.grey[300]),
                 // ListTile(title: Text("Change Password"), dense: false, leading: Icon(Icons.password), onTap: () => print("sdf"),),
                 // Divider(height: 0.1, color: Colors.grey[300]),
+                ListTile(title: Text("Notification settings"), dense: false, leading: Icon(Icons.notifications), onTap: () => handleNotificationSetting(),),
+                Divider(height: 0.1, color: Colors.grey[300]),
                 ListTile(title: Text("Logout"), dense: false, leading: Icon(Icons.logout), onTap: () => handleLogout(),),
                 Divider(height: 0.1, color: Colors.grey[300]),
               ],
@@ -321,5 +324,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Provider.of<NetworkProvider>(context, listen: false).clearAll();
     AuthService auth = new AuthService();
     auth.logout(context);
+  }
+
+  handleNotificationSetting() {
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) {
+          return NotificationSettingScreen();
+        },
+        fullscreenDialog: true));
   }
 }

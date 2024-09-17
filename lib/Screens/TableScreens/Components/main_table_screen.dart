@@ -145,7 +145,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
             })
           ],
         ),
-        bottomNavigationBar: Consumer<SliderProvider>(builder: (context, slide, child){
+        bottomNavigationBar: Consumer2<SliderProvider, TablesProvider>(builder: (context, slide, tableP, child){
           return Container(
               color: Color(0xFF3F5AA6),
               child: TabBar(
@@ -178,7 +178,11 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
                   ),
                   Tab(
                     text: "Requesting",
-                    icon: Icon(Icons.account_balance_wallet, size: 20),
+                    icon: Badge(child: Icon(Icons.account_balance_wallet, size: 20),
+                        isLabelVisible: (tableP?.reqTables?.length  ?? 0 )> 0,
+                        offset: const Offset(12, -9),
+                        alignment: Alignment.topRight,
+                        label: Text((tableP?.reqTables?.length ?? 0).toString() ?? "")),
                   ),
                   Tab(
                     text: "Options",
@@ -366,84 +370,86 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   loadAllContent(TablesProvider tab, signal) {
     print(tab.filterTableMaster?.length);
     return (tab.filterTableMaster?.length ?? 0) > 0 ?
-    Column(
-      children: [
-        Container(
-          height: 45,
-          decoration: BoxDecoration(
-            color: Color(0x303F5AA6),
-            // borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          child: TabBar(
-            isScrollable: true,
-            onTap: (int val){
-              print("on tap");
-              print(val);
-              Provider.of<TablesProvider>(context, listen: false).onTabChanged(this.cats[val]);
-            },
-            controller: _tabController,
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-
-            indicator: BoxDecoration(
+    SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            height: 45,
+            decoration: BoxDecoration(
+              color: Color(0x303F5AA6),
               // borderRadius: BorderRadius.all(Radius.circular(10)),
-                color: Color(0xFF3F5AA6)
             ),
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.black87,
-            tabs: List.generate(
-              this.cats.length,
-                  (index) => Tab(
-                child: Row(
-                  children: [
-                    Text("${this.cats[index]}", overflow: TextOverflow.ellipsis,),
-                  ],
+            child: TabBar(
+              isScrollable: true,
+              onTap: (int val){
+                print("on tap");
+                print(val);
+                Provider.of<TablesProvider>(context, listen: false).onTabChanged(this.cats[val]);
+              },
+              controller: _tabController,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+
+              indicator: BoxDecoration(
+                // borderRadius: BorderRadius.all(Radius.circular(10)),
+                  color: Color(0xFF3F5AA6)
+              ),
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.black87,
+              tabs: List.generate(
+                this.cats.length,
+                    (index) => Tab(
+                  child: Row(
+                    children: [
+                      Text("${this.cats[index]}", overflow: TextOverflow.ellipsis,),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 12,),
-        GridView.builder(
-            cacheExtent: 100,
-            // physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: getItemCountPerRow(context),
-//childAspectRatio: (3 / 2),
-            ),
-            itemCount: tab.filterTableMaster?.length,
-            itemBuilder: (BuildContext context, int index) {
-              var table = tab.filterTableMaster[index];
-              return Stack(
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
-                        return TableDetailScreen(tableMaster: table,);
-                      }));
-                    },
-                    child: Card(
-                      color: getColor(table),
-                      child: allTextContent(table),
-                    ),
-                  ),
-                  (table.requestingOtp ?? 0) > 0 ? Align(
-                    alignment: Alignment.topCenter,
-                    child: badges.Badge(
-                      showBadge: false,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                        child: const Icon(Icons.notifications_active, color: Colors.pink),
-// Icon(Icons.notifications_active, color: Colors.pink),
+          const SizedBox(height: 12,),
+          GridView.builder(
+              cacheExtent: 100,
+               physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: getItemCountPerRow(context),
+      //childAspectRatio: (3 / 2),
+              ),
+              itemCount: tab.filterTableMaster?.length,
+              itemBuilder: (BuildContext context, int index) {
+                var table = tab.filterTableMaster[index];
+                return Stack(
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+                          return TableDetailScreen(tableMaster: table,);
+                        }));
+                      },
+                      child: Card(
+                        color: getColor(table),
+                        child: allTextContent(table),
                       ),
                     ),
-                  ) : Container(),
+                    (table.requestingOtp ?? 0) > 0 ? Align(
+                      alignment: Alignment.topCenter,
+                      child: badges.Badge(
+                        showBadge: false,
+                        child: Container(
+                          margin: const EdgeInsets.fromLTRB(0, 15, 0, 0),
+                          child: const Icon(Icons.notifications_active, color: Colors.pink),
+      // Icon(Icons.notifications_active, color: Colors.pink),
+                        ),
+                      ),
+                    ) : Container(),
 
-                ],
-              );
-            }),
-      ],
+                  ],
+                );
+              }),
+        ],
+      ),
     )
         : Container();
   }

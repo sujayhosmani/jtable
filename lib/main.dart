@@ -14,6 +14,7 @@ import 'package:jtable/Screens/Providers/menu_provider.dart';
 import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
+import 'package:jtable/Screens/Providers/staff_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:jtable/firebase_options.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 
 Future<void> handleBackgroundMessage(RemoteMessage message)async {
+  await Firebase.initializeApp();
   print("Handling a background message: ${message.messageId}");
   print(message.notification?.title ?? "");
   print(' body $message.notification?.body ?? ""');
@@ -65,6 +67,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => MenuProvider()),
         ChangeNotifierProvider(create: (context) => SliderProvider()),
         ChangeNotifierProvider(create: (context) => FooterProvider()),
+        ChangeNotifierProvider(create: (context) => StaffProvider()),
       ],
       child: MaterialApp(
         navigatorKey: NavigationService.navigatorKey,

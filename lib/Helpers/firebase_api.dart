@@ -55,6 +55,7 @@ class FirebaseApi{
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
     FirebaseMessaging.onMessage.listen((message) {
+      print('FirebaseApi::: on messagr received');
         final notification = message.notification;
         if(notification == null) return;
 
@@ -68,9 +69,11 @@ class FirebaseApi{
                   _androidChannel.id,
                   _androidChannel.name,
                   channelDescription: _androidChannel.description,
-                  importance: Importance.high,
+                  importance: Importance.max,
+                  priority: Priority.max,
                   color: Colors.blue,
                   playSound: true,
+                  ticker: 'ticker',
                   icon: '@mipmap/ic_launcher'
                 // icon: android?.smallIcon,
                 // other properties...
