@@ -63,6 +63,7 @@ class SignalRService with ChangeNotifier{
           connection.onreconnecting((connectionId) {
             print("signalRService on reconnecting");
             connectionIsOpen = false;
+            initializeConnection(contexts);
             notifyListeners();
           });
 

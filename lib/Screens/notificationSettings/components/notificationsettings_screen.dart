@@ -23,7 +23,7 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    Provider.of<StaffProvider>(context, listen: false).GetStaff(context);
+    Provider.of<StaffProvider>(context, listen: false).GetStaff(context, false, "init");
     super.initState();
   }
 
@@ -61,7 +61,7 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
             )
           ],
         ),
-        bottomNavigationBar: ElevatedButton(onPressed: ()=> onSubmit(), child: Text("Save", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
+        bottomNavigationBar: ElevatedButton(onPressed: () async => await onSubmit(), child: Text("Save", style: TextStyle(color: Colors.white),), style: ElevatedButton.styleFrom(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.zero
           ),
@@ -76,7 +76,6 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
             }),
 
             Consumer<GlobalProvider>(builder: (context, global, child) {
-              print(global.error);
               return LoadingScreen(
                 isBusy: global.isBusy,
                 error: global.error ?? "",
@@ -129,7 +128,6 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
         itemCount: table1.length,
         itemBuilder: (BuildContext context, int index) {
           var table = table1[index];
-          print(table.tableMaster?.tableNo);
           return Container(
             child: Row(
               children: [
@@ -147,7 +145,9 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
     staff.onCatClicked(cat, value);
   }
 
-  onSubmit() {}
+  onSubmit() async {
+    await Provider.of<StaffProvider>(context, listen: false).SubmitNotificationTables(context);
+  }
 
   _handleTableCheckbox(bool value, StaffProvider staff, TableKeyValue table1) {
     staff.onTableClicked(table1, value);

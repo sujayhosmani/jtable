@@ -3,6 +3,7 @@
 
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:jtable/Helpers/Constants.dart';
 import 'package:jtable/Helpers/auth_service.dart';
@@ -38,7 +39,10 @@ class NetworkProvider with ChangeNotifier{
 
   Future<Users?> UserLogin(BuildContext context, String name, String password, String id) async {
     try{
-      final response = await _helper.post("login/auth", Auth(name, password, id).toJson(), context);
+      final _firebaseMessaging = FirebaseMessaging.instance;
+      final token = await _firebaseMessaging.getToken();
+      print('FirebaseApi:::Token::: $token');
+      final response = await _helper.post("login/auth?isToken=true", Auth(name, password, id, token).toJson(), context);
       print("network Model");
       if(response != null){
         _users = Users.fromJson(response);

@@ -132,8 +132,10 @@ class StafModel {
   bool? get status => _status;
   dynamic get category => _category;
   dynamic get deviceToken => _deviceToken;
+  set deviceToken(dynamic val) => _deviceToken = val;
   dynamic get kitchenCategory => _kitchenCategory;
   List<String>? get notificationTables => _notificationTables;
+  set notificationTables(List<String>? val) => _notificationTables = val;
   String? get id => _id;
   int? get code => _code;
   String? get createdDateTime => _createdDateTime;
