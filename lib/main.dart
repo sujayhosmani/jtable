@@ -1,11 +1,15 @@
 
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:jtable/Helpers/auth_service.dart';
 import 'package:jtable/Helpers/firebase_api.dart';
 import 'package:jtable/Helpers/navigation_service.dart';
 import 'package:jtable/Helpers/signalR_services.dart';
 import 'package:jtable/Models/Orders.dart';
+import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Screens/LoginScreen/main_login_screen.dart';
 import 'package:jtable/Screens/MenuScreen/menu_screen.dart';
 import 'package:jtable/Screens/Providers/global_provider.dart';
@@ -22,9 +26,12 @@ import 'package:jtable/Screens/TableScreens/Components/main_table_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 
+import 'Screens/TableDetalView/Components/table_detail_screen.dart';
+
 
 Future<void> handleBackgroundMessage(RemoteMessage message)async {
   await Firebase.initializeApp();
+  print('FirebaseApi::: will handle the message here hannnnnnnnnnnnnnn 777');
   print("Handling a background message: ${message.messageId}");
   print(message.notification?.title ?? "");
   print(' body $message.notification?.body ?? ""');
@@ -32,10 +39,29 @@ Future<void> handleBackgroundMessage(RemoteMessage message)async {
 
 }
 
+void onDidReceiveNotificationResponse(NotificationResponse details, BuildContext context) {
+  print('FirebaseApi::: will handle the message here hannnnnnnnnnnnnnn 000');
+  if(details != null){
+    if(details?.payload != null){
+      print('FirebaseApi::: details details:::  $details');
+      final String payload = details.payload ?? "";
+      final message = RemoteMessage.fromMap(jsonDecode(payload));
+      print(details.payload);
+      print(message.data["TableId"]);
+      String tableId = message.data["TableId"];
+      List<TableMaster> allTables = Provider.of<TablesProvider>(context, listen: false).tableMaster;
+      TableMaster table = allTables.firstWhere((element) => element.id == tableId);
+      Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+        return TableDetailScreen(tableMaster: table,);
+      }));
+    }
+  }
+
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseApi().initNotifications();
   AuthService appAuth = new AuthService();
   Widget _defaultHome = new MainLogin();
 

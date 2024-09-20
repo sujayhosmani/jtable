@@ -5,6 +5,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:jtable/main.dart';
+import 'package:provider/provider.dart';
+
+import '../Models/Table_master.dart';
+import '../Screens/Providers/tables_provider.dart';
+import '../Screens/TableDetalView/Components/table_detail_screen.dart';
 
 
 
@@ -22,20 +27,43 @@ class FirebaseApi{
   final _localNotifications = FlutterLocalNotificationsPlugin();
 
 
-  void handleMessage(RemoteMessage? message){
-    print("FirebaseApi::: will handle the message here hannnnnnnnnnnnnnn");
+  void handleMessage(RemoteMessage? message, BuildContext context){
+    print("FirebaseApi::: will handle the message here hannnnnnnnnnnnnnn 111");
     if(message == null) return;
-    print("FirebaseApi::: will handle the message here");
+
+    print("FirebaseApi::: will handle the message here hannnnnnnnnnnnnnn 222");
+
+    print(message.data);
+    print("FirebaseApi::: will handle the message here hannnnnnnnnnnnnnn 333");
+
+    String tableId = message.data["TableId"];
+    List<TableMaster> allTables = Provider.of<TablesProvider>(context, listen: false).tableMaster;
+    TableMaster table = allTables.firstWhere((element) => element.id == tableId);
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context){
+      return TableDetailScreen(tableMaster: table,);
+    }));
+
   }
 
-  Future initLocalNotifications() async{
+  Future initLocalNotifications(BuildContext context) async{
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initializationSettings = InitializationSettings(android: android);
     _localNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
-    await _localNotifications.initialize(initializationSettings, onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
+    // await _localNotifications.initialize(initializationSettings, onDidReceiveNotificationResponse: (payload) {
+    //   print("payload 111 222");
+    // });
 
     try{
-      await _localNotifications.initialize(initializationSettings, onDidReceiveBackgroundNotificationResponse: onDidReceiveNotificationResponse);
+      // await _localNotifications.initialize(initializationSettings, onDidReceiveBackgroundNotificationResponse: (payload) {
+      //   print("payload 111");
+      // });
+      await _localNotifications.initialize(
+          initializationSettings,
+          onDidReceiveNotificationResponse: (payload){
+            // handle interaction when app is active for android
+            onDidReceiveNotificationResponse(payload, context);
+          }
+      );
     }catch(ex){
 
     }finally{
@@ -45,20 +73,21 @@ class FirebaseApi{
 
   }
 
-  Future initPushNotification() async{
+  Future initPushNotification(BuildContext context) async{
     await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true
     );
-    FirebaseMessaging.instance.getInitialMessage().then(handleMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(handleMessage);
+    FirebaseMessaging.instance.getInitialMessage().then((mess) {handleMessage(mess, context);});
+    FirebaseMessaging.onMessageOpenedApp.listen((messageT) {handleMessage(messageT, context);});
     FirebaseMessaging.onBackgroundMessage(handleBackgroundMessage);
     FirebaseMessaging.onMessage.listen((message) {
       print('FirebaseApi::: on messagr received');
         final notification = message.notification;
         if(notification == null) return;
 
+      initLocalNotifications(context);
         _localNotifications.show(
             0,
             notification.title,
@@ -82,7 +111,7 @@ class FirebaseApi{
     });
   }
 
-  Future<void> initNotifications() async{
+  Future<void> initNotifications(BuildContext context) async{
     await  await _firebaseMessaging.requestPermission(
       alert: true,
       announcement: true,
@@ -94,19 +123,10 @@ class FirebaseApi{
     );
     final token = await _firebaseMessaging.getToken();
     print('FirebaseApi::: Token:::  $token');
-    initPushNotification();
-    initLocalNotifications();
+    initPushNotification(context);
+    initLocalNotifications(context);
   }
 
-  void onDidReceiveNotificationResponse(NotificationResponse details) {
-    if(details != null){
-      if(details?.payload != null){
-        print('FirebaseApi::: details details:::  $details');
-        final String payload = details.payload ?? "";
-        final message = RemoteMessage.fromMap(jsonDecode(payload));
-        handleMessage(message);
-      }
-    }
 
-  }
 }
+

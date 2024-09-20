@@ -21,6 +21,8 @@ import 'package:jtable/Screens/shared/loading_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
+import '../../../Helpers/firebase_api.dart';
+
 
 class MainTableScreen extends StatefulWidget {
   final bool isFromLogin;
@@ -88,6 +90,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   }
 
   initialCalls() async {
+    await FirebaseApi().initNotifications(context);
     await Provider.of<NetworkProvider>(context, listen: false).fetchFromSharedPreference();
     await Provider.of<SignalRService>(context, listen: false).initializeConnection(context);
     await Provider.of<TablesProvider>(context, listen: false).GetAllTables(context, true);

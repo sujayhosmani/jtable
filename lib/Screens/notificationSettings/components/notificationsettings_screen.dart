@@ -106,10 +106,11 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
           return StickyHeader(
             header: Container(
               color: Colors.white,
+              padding: EdgeInsets.all(10),
               child: Row(
                 children: [
-                  Checkbox(value: cat.isChecked, onChanged: (value) => _handleCatCheckbox(value ?? false, staff, cat)),
-                  Text(cat.category ?? ""),
+                  //Checkbox(value: cat.isChecked, onChanged: (value) => _handleCatCheckbox(value ?? false, staff, cat)),
+                  Text(cat.category ?? "", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 
                 ],
               ),
@@ -133,7 +134,7 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
               children: [
 
                 Checkbox(value: table.isChecked, onChanged: (value) => _handleTableCheckbox(value ?? false, staff, table)),
-                Text(table.tableMaster?.tableNo ?? "", style: TextStyle(color: Colors.black),),
+                Text(table.tableMaster?.tableNo ?? "", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
               ],
             ),
           );
