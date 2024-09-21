@@ -218,8 +218,12 @@ class TablesProvider with ChangeNotifier{
 
   UpdateTable(TableMaster? table, BuildContext context) async {
     try{
+      print(json.encode(table?.toJson()));
       final response = await _helper.post("table/tablemaster", table?.toJson(),  context);
       if(response != null){
+        print("inside the response");
+        print(response);
+        Provider.of<OrdersProvider>(context, listen: false).updateCurrentTable(table, context);
         await GetAllTables(context, true);
       }
 

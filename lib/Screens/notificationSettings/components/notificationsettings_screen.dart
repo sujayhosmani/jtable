@@ -22,7 +22,7 @@ class _NotificationSettingScreenState extends State<NotificationSettingScreen>  
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
+    //WidgetsBinding.instance.addObserver(this);
     Provider.of<StaffProvider>(context, listen: false).GetStaff(context, false, "init");
     super.initState();
   }

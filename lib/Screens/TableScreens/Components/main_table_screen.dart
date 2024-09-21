@@ -69,7 +69,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
+    //WidgetsBinding.instance.addObserver(this);
     _tabController = TabController(length: this.cats.length, vsync: this);
     _tabController2 = TabController(length: 4, vsync: this);
 

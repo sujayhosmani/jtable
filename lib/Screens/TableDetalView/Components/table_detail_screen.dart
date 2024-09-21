@@ -51,7 +51,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    //WidgetsBinding.instance.addObserver(this);
     finalTable2 = widget.tableMaster;
     Provider.of<OrdersProvider>(context, listen: false).AddCurrentTable(widget.tableMaster);
     _tabController = new TabController(vsync: this, length: 4);

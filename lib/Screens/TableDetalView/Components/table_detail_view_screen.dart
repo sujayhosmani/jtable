@@ -5,10 +5,13 @@ import 'package:jtable/Models/Orders.dart';
 import 'package:jtable/Models/Table_master.dart';
 import 'package:jtable/Screens/Providers/logged_inProvider.dart';
 import 'package:jtable/Screens/Providers/menu_provider.dart';
+import 'package:jtable/Screens/Providers/network_provider.dart';
 import 'package:jtable/Screens/Providers/orders_provider.dart';
 import 'package:jtable/Screens/Providers/slider_provider.dart';
 import 'package:jtable/Screens/Providers/tables_provider.dart';
 import 'package:provider/provider.dart';
+
+import '../../../Models/Users.dart';
 
 class TableDetailViewScreen extends StatefulWidget
 {
@@ -24,12 +27,14 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
 {
   late TableMaster finalTable;
   late Orders? orderDetails;
+  late String userId;
 
   @override
   void initState() {
     super.initState();
     finalTable = widget.tableMaster;
     orderDetails = widget.orderDetails;
+    userId = Provider.of<NetworkProvider>(context, listen: false).id ?? "";
 
 
 
@@ -157,6 +162,12 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
 
                         ],
                       ),
+                      userId == finalTable.assignedStaffId ? Container() : Container(
+                        alignment: Alignment.topRight,
+                          child: TextButton(onPressed: ()async{ await onAssignedToMe(orders);}, child: Text("Assigned to me"), style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),)),
                       Divider(
                         color: Colors.grey,
                         height: 3,
@@ -487,5 +498,16 @@ class _TableDetailViewScreenState extends State<TableDetailViewScreen>
 
   void getLoggedInUsers() {
     Provider.of<LoggedInProvider>(context, listen: false).GetLoggedInUserTableId(finalTable.id ?? "", context);
+  }
+
+  onAssignedToMe(OrdersProvider orders)async {
+    Users? user = Provider.of<NetworkProvider>(context, listen: false).users;
+    TableMaster? table = orders.currentTable;
+    table?.assignedStaffId = user?.id;
+    table?.assignedStaffName = user?.name;
+    table?.assignedStaffPh = user?.phone;
+    table?.from = "assigned_to_me";
+    await Provider.of<TablesProvider>(context, listen: false)
+        .UpdateTable(table, context);
   }
 }
