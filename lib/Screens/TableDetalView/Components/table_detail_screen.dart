@@ -617,7 +617,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context)
                       .textTheme
-                      .bodyText1!
+                      .bodyLarge!
                       .copyWith(
                     fontSize: 12.0,
                     color: Colors.grey[500],

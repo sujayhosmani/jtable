@@ -253,7 +253,7 @@ class _MenuScreenState extends State<MenuScreen>
                         decoration: InputDecoration(
                           hintText: 'Search for restaurants and food',
                           hintStyle:
-                          Theme.of(context).textTheme.subtitle2!.copyWith(
+                          Theme.of(context).textTheme.titleSmall!.copyWith(
                             color: Colors.grey,
                             fontSize: 17.0,
                             fontWeight: FontWeight.w600,

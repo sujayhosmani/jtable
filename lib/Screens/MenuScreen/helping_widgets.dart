@@ -51,7 +51,7 @@ class FoodListView extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context)
                       .textTheme
-                      .bodyText1!
+                      .bodyLarge!
                       .copyWith(
                     fontSize: 12.0,
                     color: Colors.grey[500],
@@ -125,7 +125,7 @@ class FoodListView extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context)
                           .textTheme
-                          .bodyText1!
+                          .bodyLarge!
                           .copyWith(
                         fontSize: 12.0,
                         color: Colors.grey[500],
@@ -220,7 +220,7 @@ class AddBtnView extends StatelessWidget {
           'ADD',
           style: Theme.of(context)
               .textTheme
-              .subtitle2!
+              .titleSmall!
               .copyWith(color: Colors.green),
         ),
       ),
