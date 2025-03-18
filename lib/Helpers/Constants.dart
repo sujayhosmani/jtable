@@ -15,7 +15,7 @@ const Color secondary = Color(0xFF7BB0FF);
 const Color black = Color(0xFF000000);
 const Color white = Color(0xFFFFFFFF);
 const Color grey = Colors.grey;
-const String baseUrl = "https://jmenu.azurewebsites.net/api/";//"https://digirestro.co.in/jmenu/api/";
+const String baseUrl = "https://jayrestro.co.in/jmenu/api/";
 
 // const String baseUrl = "https://192.168.1.7:5000/api/";
 
