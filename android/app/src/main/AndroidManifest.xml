@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>  <!-- FOR ANDROID 13  -->
 
     <application
-        android:label="jtable"
+        android:label="jay restro"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">

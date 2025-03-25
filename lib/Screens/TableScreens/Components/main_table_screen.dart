@@ -113,7 +113,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
       return Scaffold(
         appBar: AppBar(
           backgroundColor: signal.connectionIsOpen ? Colors.orangeAccent : Colors.redAccent,
-          title: Text("jayrestro"),
+          title: Text("jay restro"),
           actions: [
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -213,34 +213,37 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
         Expanded(
           child: Consumer<TablesProvider>(builder: (context, tab, child) {
             print("on refresh");
-            return Stack(
-              children: [
-                Visibility(
-                  child: loadAllContent(tab, signal),
-                  visible: tab.selectedVal == 2,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                  child: loadAssignedContent(tab),
-                  visible: tab.selectedVal == 1,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                  child: loadReqContent(tab),
-                  visible: tab.selectedVal == 3,
-                  maintainSize: true,
-                  maintainAnimation: true,
-                  maintainState: true,
-                ),
-                Visibility(
-                    child: SettingsScreen(),
-                  visible: tab.selectedVal == 4,
-                )
-              ],
+            return Container(
+              color: Colors.white,
+              child: Stack(
+                children: [
+                  Visibility(
+                    child: loadAllContent(tab, signal),
+                    visible: tab.selectedVal == 2,
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                  ),
+                  Visibility(
+                    child: loadAssignedContent(tab),
+                    visible: tab.selectedVal == 1,
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                  ),
+                  Visibility(
+                    child: loadReqContent(tab),
+                    visible: tab.selectedVal == 3,
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                  ),
+                  Visibility(
+                      child: SettingsScreen(),
+                    visible: tab.selectedVal == 4,
+                  )
+                ],
+              ),
             );
 
 
@@ -266,10 +269,12 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
   getColor(TableMaster? table) {
     if(table?.isOccupied ?? false){
       return Colors.amber[200];
-    }
+    }else
     if((table?.requestingOtp ?? 0) > 0){
       return Colors.blue[200];
 
+    }else{
+      return Colors.white70;
     }
   }
 
@@ -379,7 +384,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
           Container(
             height: 45,
             decoration: BoxDecoration(
-              color: Color(0x303F5AA6),
+              color: Colors.orangeAccent,
               // borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: TabBar(
@@ -399,6 +404,7 @@ class _MainTableScreenState extends State<MainTableScreen> with AutomaticKeepAli
               ),
               labelColor: Colors.white,
               unselectedLabelColor: Colors.black87,
+
               tabs: List.generate(
                 this.cats.length,
                     (index) => Tab(

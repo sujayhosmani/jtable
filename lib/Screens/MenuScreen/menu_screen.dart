@@ -237,56 +237,59 @@ class _MenuScreenState extends State<MenuScreen>
         ),
         body: Stack(
           children: [
-            Column(
-              children: [
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextField(
-                        controller: _textController,
-                        onChanged: (val){
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: TextField(
+                          controller: _textController,
+                          onChanged: (val){
 
-                          setState(() {
-                            Provider.of<MenuProvider>(context, listen: false).onSearch(val, false);
-                          });
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Search for restaurants and food',
-                          hintStyle:
-                          Theme.of(context).textTheme.titleSmall!.copyWith(
-                            color: Colors.grey,
-                            fontSize: 17.0,
-                            fontWeight: FontWeight.w600,
+                            setState(() {
+                              Provider.of<MenuProvider>(context, listen: false).onSearch(val, false);
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search for restaurants and food',
+                            hintStyle:
+                            Theme.of(context).textTheme.titleSmall!.copyWith(
+                              color: Colors.grey,
+                              fontSize: 17.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            // border: InputBorder.none,
                           ),
-                          // border: InputBorder.none,
                         ),
                       ),
-                    ),
-                    // UIHelper.horizontalSpaceMedium(),
-                    IconButton(
-                      icon: _textController.text.isEmpty ? Icon(Icons.search) : InkWell(onTap: (){
-                        _textController.clear();
-                        Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
-                        setState(() {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                      });},child: Icon(Icons.cancel)),
-                      onPressed: () {
+                      // UIHelper.horizontalSpaceMedium(),
+                      IconButton(
+                        icon: _textController.text.isEmpty ? Icon(Icons.search) : InkWell(onTap: (){
+                          _textController.clear();
+                          Provider.of<MenuProvider>(context, listen: false).onSearch("", false);
+                          setState(() {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                        });},child: Icon(Icons.cancel)),
+                        onPressed: () {
 
-                      },
-                    )
-                  ],
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    // onVerticalDragDown: (DragD) {FocusManager.instance.primaryFocus?.unfocus();},
-                    onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-                    child: Consumer<MenuProvider>(builder: (context, menu, child) {
-                          return _menuListView(menu);
-                        }
+                        },
+                      )
+                    ],
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      // onVerticalDragDown: (DragD) {FocusManager.instance.primaryFocus?.unfocus();},
+                      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                      child: Consumer<MenuProvider>(builder: (context, menu, child) {
+                            return _menuListView(menu);
+                          }
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             Consumer<GlobalProvider>(builder: (context, global, child) {
               print(global.error);

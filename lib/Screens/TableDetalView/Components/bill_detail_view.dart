@@ -35,6 +35,7 @@ class _BillDetailViewScreenState extends State<BillDetailViewScreen>
   {
     return Scaffold(
       body: Container(
+        color: Colors.white,
         constraints: BoxConstraints.expand(),
         child: Column(
           children: <Widget>[

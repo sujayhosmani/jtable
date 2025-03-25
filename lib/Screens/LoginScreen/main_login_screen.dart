@@ -29,6 +29,7 @@ class MainLogin extends StatelessWidget {
           SingleChildScrollView(
               child:  Container(
                 width: double.infinity,
+                color: Colors.white,
                 // decoration: BoxDecoration(
                 //     color: Colors.white,
                 //     boxShadow: [
@@ -52,7 +53,7 @@ class MainLogin extends StatelessWidget {
                       SizedBox(height: 8,),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Center(child: Text("jayrestro", style: TextStyle(fontSize: 18, ),)),
+                        child: Center(child: Text("jay restro", style: TextStyle(fontSize: 18, ),)),
                       ),
                       SizedBox(height: 10,),
                       Padding(

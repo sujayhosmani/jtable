@@ -194,17 +194,20 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
                 if(!isOrderJoined && (orders.currentTable?.isOccupied ?? false) == true){
                   joinTheGroup();
                 }
-                return (orders.currentTable?.isOccupied ?? false) ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    buildPrimaryTopBar(slide.selectedVal, orders),
-                    buildTabBar(slide, orders),
-                    buildTabBarView(slide, orders),
-                    //buildOtherViews(slide.selectedVal),
-                    Consumer<FooterProvider>(builder: (context, footer, child) {
-                      return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
-                    })
-                  ],
+                return (orders.currentTable?.isOccupied ?? false) ? Container(
+                  color: Colors.white,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      buildPrimaryTopBar(slide.selectedVal, orders),
+                      buildTabBar(slide, orders),
+                      buildTabBarView(slide, orders),
+                      //buildOtherViews(slide.selectedVal),
+                      Consumer<FooterProvider>(builder: (context, footer, child) {
+                        return buildFooter(slide.selectedVal, footer.selectedFooter, orders);
+                      })
+                    ],
+                  ),
                 ) : fillUserDetails2(orders);
               }),
               Consumer<GlobalProvider>(builder: (context, global, child) {
@@ -839,6 +842,7 @@ class _TableDetailScreenState extends State<TableDetailScreen> with TickerProvid
 
   fillUserDetails2(OrdersProvider orders){
     return Container(
+      color: Colors.white,
       child: Column(
         children: [
           Expanded(
